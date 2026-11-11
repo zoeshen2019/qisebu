@@ -1,0 +1,2839 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style><link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="theme-color" content="#F5F3F6" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#16141B" media="(prefers-color-scheme: dark)"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="气色簿"><meta name="apple-mobile-web-app-status-bar-style" content="default"></head><body><title>气色簿</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&family=ZCOOL+XiaoWei&display=swap" media="print" onload="this.media='all'">
+<style>
+/* 布局：手账式单列，手机底部文字目录，桌面左侧目录。配色取自传统妆品：铅粉、黛、胭脂。 */
+:root {
+  --bg: #F5F3F6; --surface: #FFFFFF; --surface-2: #ECE8EF; --line: #DED8E2;
+  --ink: #26242E; --ink-2: #575363; --ink-3: #6E6A7B;
+  --rouge: #A82A45; --rouge-wash: #F6E3E7; --on-rouge: #FFFFFF;
+  --dai: #5468BC; --dai-wash: #E3E6F4;
+  --good: #1F6F64; --good-wash: #DCEFEA; --warn: #8F5C0C; --warn-wash: #F6EAD2; --crit: #A8201A; --crit-wash: #F9DEDC;
+  --heat-1: #F0CBD3; --heat-2: #D7798C; --heat-3: #A82A45;
+  --scrim: rgba(24, 20, 30, 0.46);
+  --f-display: "ZCOOL XiaoWei", "Songti SC", "STSong", "Noto Serif SC", serif;
+  --f-body: "PingFang SC", "HarmonyOS Sans SC", "MiSans", "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+  --f-num: "Jost", "Helvetica Neue", Arial, var(--f-body);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16141B; --surface: #201D27; --surface-2: #2C2835; --line: #3A3545;
+    --ink: #EFECF3; --ink-2: #BBB6C6; --ink-3: #9C97A9;
+    --rouge: #DE6381; --rouge-wash: #41222C; --on-rouge: #1B1218;
+    --dai: #7186DA; --dai-wash: #2A2F47;
+    --good: #72CBBE; --good-wash: #1C3531; --warn: #E3B25E; --warn-wash: #3A2E18; --crit: #F2938C; --crit-wash: #40201E;
+    --heat-1: #51303A; --heat-2: #96455A; --heat-3: #DE6381;
+    --scrim: rgba(0, 0, 0, 0.6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16141B; --surface: #201D27; --surface-2: #2C2835; --line: #3A3545;
+  --ink: #EFECF3; --ink-2: #BBB6C6; --ink-3: #9C97A9;
+  --rouge: #DE6381; --rouge-wash: #41222C; --on-rouge: #1B1218;
+  --dai: #7186DA; --dai-wash: #2A2F47;
+  --good: #72CBBE; --good-wash: #1C3531; --warn: #E3B25E; --warn-wash: #3A2E18; --crit: #F2938C; --crit-wash: #40201E;
+  --heat-1: #51303A; --heat-2: #96455A; --heat-3: #DE6381;
+  --scrim: rgba(0, 0, 0, 0.6);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.6; margin: 0; }
+h1, h2, h3, p { margin: 0; }
+h1, h2 { font-family: var(--f-display); font-weight: 400; text-wrap: balance; }
+h1 { font-size: 27px; line-height: 1.25; }
+h2 { font-size: 21px; line-height: 1.3; }
+h3 { font-size: 15px; font-weight: 600; }
+a { color: inherit; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--rouge); outline-offset: 2px; }
+.muted { color: var(--ink-3); }
+.small { font-size: 13px; }
+.note { color: var(--ink-2); font-size: 14px; max-width: 62ch; }
+.num-f { font-family: var(--f-num); }
+.tn { font-variant-numeric: tabular-nums; }
+.row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.between { justify-content: space-between; }
+.stack { display: grid; gap: 12px; min-width: 0; align-content: start; }
+.stack-s { display: grid; gap: 6px; min-width: 0; align-content: start; }
+
+/* 框架 */
+.shell { min-height: 100%; }
+.main { padding-block: 12px 104px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); width: 100%; max-width: 720px; margin-inline: auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; }
+.topbar { display: flex; align-items: center; justify-content: space-between; min-height: 40px; }
+.brand { font-family: var(--f-display); font-size: 21px; letter-spacing: 0.06em; text-decoration: none; }
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: max(4px, env(safe-area-inset-left, 0px)); padding-right: max(4px, env(safe-area-inset-right, 0px)); }
+.tabbar a { position: relative; display: flex; align-items: center; justify-content: center; height: 56px; padding-bottom: 6px; color: var(--ink-3); text-decoration: none; font-size: 14px; }
+.tabbar a[aria-current="page"] { color: var(--ink); font-weight: 600; }
+.tabbar a[aria-current="page"]::after, .rail nav a[aria-current="page"]::before { content: ""; position: absolute; width: 5px; height: 5px; border-radius: 50%; background: var(--rouge); }
+.tabbar a[aria-current="page"]::after { bottom: 9px; }
+.rail { display: none; }
+@media (min-width: 900px) {
+  .shell { display: grid; grid-template-columns: 176px minmax(0, 1fr); }
+  .rail { display: flex; flex-direction: column; gap: 22px; position: sticky; top: 0; height: 100vh; padding: 28px 12px 24px 32px; border-right: 1px solid var(--line); }
+  .rail .brand { font-size: 28px; }
+  .rail nav { display: grid; gap: 2px; }
+  .rail nav a { position: relative; display: block; padding: 8px 0 8px 16px; text-decoration: none; color: var(--ink-3); font-size: 16px; }
+  .rail nav a[aria-current="page"] { color: var(--ink); font-weight: 600; }
+  .rail nav a[aria-current="page"]::before { left: 2px; top: 19px; }
+  .rail .rail-foot { margin-top: auto; }
+  .tabbar, .topbar { display: none; }
+  .main { max-width: 1060px; padding-block: 30px 56px; padding-left: max(40px, env(safe-area-inset-left, 0px)); padding-right: max(40px, env(safe-area-inset-right, 0px)); }
+  .cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important; column-gap: 48px; align-items: start; }
+  .cols > .span-2 { grid-column: 1 / -1; }
+}
+.cols { display: grid; grid-template-columns: minmax(0, 1fr); }
+.sec { display: grid; gap: 12px; padding-block: 20px; border-top: 1px solid var(--line); min-width: 0; align-content: start; }
+.sec.first { border-top: 0; padding-top: 8px; }
+.sec-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+/* 控件 */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 42px; padding: 8px 18px; border-radius: 6px; border: 1px solid var(--rouge); background: var(--rouge); color: var(--on-rouge); font-weight: 600; cursor: pointer; text-decoration: none; white-space: nowrap; }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); font-weight: 500; }
+.btn.sm { min-height: 36px; padding: 4px 12px; font-size: 14px; }
+.btn.danger { background: transparent; border-color: var(--crit); color: var(--crit); }
+.icon-btn { display: inline-grid; place-items: center; width: 40px; height: 40px; border: 0; background: transparent; color: var(--ink-2); border-radius: 6px; cursor: pointer; text-decoration: none; flex: none; }
+.icon-btn:disabled { opacity: 0.3; cursor: default; }
+.link { background: none; border: 0; padding: 0; color: var(--rouge); cursor: pointer; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
+.seg { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; border-radius: 8px; background: var(--surface-2); max-width: 100%; }
+.seg button { border: 0; background: transparent; padding: 5px 12px; min-height: 36px; border-radius: 6px; color: var(--ink-2); font-size: 14px; cursor: pointer; }
+.seg button.on { background: var(--surface); color: var(--ink); font-weight: 600; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 4px 12px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); color: var(--ink-2); font-size: 14px; cursor: pointer; }
+.chip.on { border-color: var(--rouge); background: var(--rouge-wash); color: var(--ink); }
+.chip em { font-style: normal; font-family: var(--f-num); color: var(--ink-3); font-size: 13px; }
+.field { display: grid; gap: 4px; min-width: 0; }
+.field > span, .label { font-size: 13px; color: var(--ink-2); }
+.field input, .field select, .field textarea, .plain { width: 100%; min-height: 42px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); font-size: 16px; }
+.field textarea { min-height: 76px; resize: vertical; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.err { color: var(--crit); font-size: 14px; }
+.check { display: flex; gap: 10px; align-items: flex-start; padding-block: 8px; cursor: pointer; }
+.check input { width: 20px; height: 20px; margin-top: 2px; accent-color: var(--rouge); flex: none; }
+.num-box { display: inline-flex; align-items: center; gap: 4px; }
+.num-box input { width: 74px; min-height: 38px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); text-align: center; font-family: var(--f-num); font-size: 16px; }
+.num-box em { font-style: normal; font-size: 13px; color: var(--ink-3); }
+
+/* 状态 */
+.pill { display: inline-flex; align-items: center; gap: 4px; padding: 1px 9px; border-radius: 11px; font-size: 13px; white-space: nowrap; }
+.pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.pill.good { background: var(--good-wash); color: var(--good); }
+.pill.warn { background: var(--warn-wash); color: var(--warn); }
+.pill.crit { background: var(--crit-wash); color: var(--crit); }
+.pill.info { background: var(--dai-wash); color: var(--ink-2); }
+.notice { display: grid; gap: 2px; padding: 10px 12px; border-radius: 6px; font-size: 14px; text-decoration: none; color: var(--ink); background: var(--dai-wash); }
+.notice.warn { background: var(--warn-wash); }
+.notice.crit { background: var(--crit-wash); }
+.notice.good { background: var(--good-wash); }
+.notice b { font-weight: 600; }
+.meter { height: 8px; border-radius: 4px; background: var(--rouge-wash); overflow: hidden; }
+.meter i { display: block; height: 100%; border-radius: 4px; background: var(--rouge); transition: width 0.25s; }
+.meter.over i { background: var(--warn); }
+
+/* 今日 */
+.day-nav { display: grid; grid-template-columns: 40px minmax(0, 1fr) 40px; align-items: center; gap: 4px; }
+.day-nav > div { text-align: center; }
+.term { font-size: 13px; color: var(--ink-3); }
+@media (min-width: 900px) { .day-nav { grid-template-columns: minmax(0, 1fr) 40px 40px; } .day-nav > div { text-align: left; grid-row: 1; grid-column: 1; } }
+.hero-day { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; align-items: center; }
+.flower-wrap { position: relative; width: 148px; height: 148px; }
+.flower-wrap .count { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--f-num); font-weight: 500; font-size: 30px; }
+.petal { fill: var(--surface-2); transition: fill 0.25s; }
+.petal.on { fill: var(--rouge); }
+.thing { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding-block: 9px; border-top: 1px solid var(--line); }
+.thing:first-child { border-top: 0; }
+.thing .t { font-weight: 600; }
+.thing .d { font-size: 13px; color: var(--ink-3); overflow-wrap: anywhere; }
+.tick { width: 34px; height: 34px; display: grid; place-items: center; border: 0; background: transparent; padding: 0; cursor: pointer; }
+.tick path { fill: var(--surface-2); transition: fill 0.2s; }
+.tick.on path { fill: var(--rouge); }
+.big-fig { font-family: var(--f-num); font-size: 52px; font-weight: 500; line-height: 1.05; }
+.big-fig small { font-size: 18px; font-weight: 400; color: var(--ink-3); margin-left: 4px; }
+.kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 14px 18px; }
+.kv > div { display: grid; gap: 1px; min-width: 0; }
+.kv .v { font-family: var(--f-num); font-size: 22px; font-weight: 500; line-height: 1.25; }
+.kv .v small { font-size: 13px; font-weight: 400; color: var(--ink-3); margin-left: 2px; }
+.kv .k { font-size: 13px; color: var(--ink-3); }
+
+/* 饮食 / 列表 */
+.list { display: grid; }
+.li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; padding-block: 9px; border-top: 1px solid var(--line); }
+.li:first-child { border-top: 0; }
+.li .d { font-size: 13px; color: var(--ink-3); overflow-wrap: anywhere; }
+.bar-row { display: grid; grid-template-columns: 74px minmax(0, 1fr) 44px; gap: 10px; align-items: center; font-size: 14px; }
+.bar-row .v { text-align: right; font-family: var(--f-num); font-variant-numeric: tabular-nums; }
+.macro { display: grid; gap: 4px; }
+details { border-top: 1px solid var(--line); padding-block: 8px; }
+details:first-of-type { border-top: 0; }
+summary { cursor: pointer; font-weight: 600; min-height: 32px; display: flex; align-items: center; justify-content: space-between; gap: 8px; list-style: none; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; font-family: var(--f-num); color: var(--ink-3); font-size: 18px; }
+details[open] summary::after { content: "–"; }
+
+/* 训练 */
+.ex { display: grid; gap: 8px; padding-block: 14px; border-top: 1px solid var(--line); }
+.ex:first-child { border-top: 0; }
+.set-row { display: grid; grid-template-columns: 24px auto auto minmax(0, 1fr) 40px; gap: 8px; align-items: center; }
+.set-row .idx { font-family: var(--f-num); color: var(--ink-3); text-align: center; }
+.done-btn { width: 40px; height: 38px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: var(--ink-3); cursor: pointer; }
+.done-btn.on { background: var(--rouge); border-color: var(--rouge); color: var(--on-rouge); }
+.rest { position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom, 0px)); z-index: 19; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-block: 8px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); background: var(--ink); color: var(--bg); }
+.rest .t { font-family: var(--f-num); font-size: 26px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.rest button { background: transparent; border: 1px solid currentColor; color: inherit; border-radius: 6px; min-height: 34px; padding: 2px 10px; cursor: pointer; }
+@media (min-width: 900px) { .rest { bottom: 0; left: 176px; } }
+
+/* 图表 */
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 16px; height: 2px; border-radius: 1px; display: block; }
+.chart { position: relative; touch-action: pan-y; }
+.chart svg { display: block; width: 100%; overflow: visible; }
+.chart text { fill: var(--ink-3); font-family: var(--f-num); font-size: 12px; }
+.grid-line { stroke: var(--line); stroke-width: 1; }
+.tip { position: absolute; top: 2px; pointer-events: none; padding: 5px 9px; border-radius: 6px; background: var(--ink); color: var(--bg); font-size: 13px; line-height: 1.45; white-space: nowrap; z-index: 2; }
+.tip b { font-family: var(--f-num); font-weight: 600; font-size: 15px; }
+.empty { display: grid; gap: 4px; place-items: center; text-align: center; padding: 28px 12px; color: var(--ink-3); font-size: 14px; background: var(--surface-2); border-radius: 6px; }
+.table-wrap { overflow-x: auto; max-height: 280px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: right; padding: 5px 8px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { font-weight: 500; color: var(--ink-3); position: sticky; top: 0; background: var(--bg); }
+.heat { display: grid; grid-template-columns: 34px minmax(0, 1fr); row-gap: 3px; align-items: center; font-size: 13px; color: var(--ink-2); touch-action: pan-y; }
+.heat-row { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 2px; }
+.heat-row i { display: block; height: 16px; border-radius: 2px; background: var(--surface-2); }
+.heat-row i.l1 { background: var(--heat-1); }
+.heat-row i.l2 { background: var(--heat-2); }
+.heat-row i.l3 { background: var(--heat-3); }
+.heat-row i.none { background: transparent; box-shadow: inset 0 0 0 1px var(--line); }
+.heat-row i.hit { outline: 2px solid var(--ink); outline-offset: 0; }
+
+/* 护肤 */
+.routine { counter-reset: s; display: grid; gap: 8px; list-style: none; padding: 0; margin: 0; }
+.routine li { counter-increment: s; display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 6px; }
+.routine li::before { content: counter(s); font-family: var(--f-num); color: var(--rouge); font-weight: 600; }
+.routine li span { font-size: 13px; color: var(--ink-3); display: block; }
+.nights { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+.nights div { padding: 8px 2px; text-align: center; font-size: 13px; border-radius: 6px; background: var(--surface-2); color: var(--ink-2); }
+.nights div.on { background: var(--rouge); color: var(--on-rouge); font-weight: 600; }
+.scale { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 8px; align-items: center; font-size: 14px; }
+.scale .seg { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.scale .seg button { padding: 4px 2px; font-size: 13px; }
+
+/* 照片 */
+.cmp { position: relative; width: 100%; max-width: 420px; aspect-ratio: 3 / 4; border-radius: 6px; overflow: hidden; background: var(--surface-2); touch-action: pan-y; }
+.cmp img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cmp .bar { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--surface); pointer-events: none; }
+.cmp input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: ew-resize; margin: 0; }
+.cmp .lb { position: absolute; bottom: 8px; padding: 1px 8px; border-radius: 4px; font-size: 12px; background: var(--scrim); color: #fff; font-family: var(--f-num); }
+.thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; }
+.thumb { position: relative; aspect-ratio: 3 / 4; border: 0; padding: 0; background: var(--surface-2); border-radius: 4px; overflow: hidden; cursor: pointer; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb span { position: absolute; left: 0; right: 0; bottom: 0; font-size: 11px; background: var(--scrim); color: #fff; font-family: var(--f-num); padding: 1px 4px; }
+
+/* 花历 */
+.cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
+.cal .wd { text-align: center; font-size: 12px; color: var(--ink-3); }
+.cal button { position: relative; display: grid; justify-items: center; align-content: start; padding: 2px 0; background: transparent; border: 0; cursor: pointer; border-radius: 4px; color: var(--ink-3); }
+.cal button.today { background: var(--surface-2); }
+.cal button:disabled { cursor: default; opacity: 0.4; }
+.cal span { font-size: 11px; font-family: var(--f-num); line-height: 1.2; }
+.review-text { white-space: pre-wrap; line-height: 1.75; }
+.bubble { padding: 8px 12px; border-radius: 8px; background: var(--surface); max-width: 92%; white-space: pre-wrap; justify-self: start; }
+.bubble.me { background: var(--rouge-wash); justify-self: end; }
+
+/* 弹层 */
+.sheet-bg { position: fixed; inset: 0; z-index: 40; display: flex; align-items: flex-end; justify-content: center; background: var(--scrim); }
+.sheet { width: 100%; max-width: 560px; max-height: 88%; overflow-y: auto; border-radius: 12px 12px 0 0; background: var(--bg); padding-block: 14px calc(22px + env(safe-area-inset-bottom, 0px)); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 14px; }
+@media (min-width: 900px) { .sheet-bg { align-items: center; } .sheet { border-radius: 10px; padding: 22px 26px; } }
+.toasts { position: fixed; left: 0; right: 0; bottom: calc(68px + env(safe-area-inset-bottom, 0px)); z-index: 60; display: grid; justify-items: center; gap: 6px; padding-inline: 16px; pointer-events: none; }
+.toast { padding: 7px 14px; border-radius: 6px; background: var(--ink); color: var(--bg); font-size: 14px; max-width: 100%; }
+.toast.crit { background: var(--crit); color: var(--surface); }
+@media (min-width: 900px) { .toasts { bottom: 28px; } }
+
+/* 首次设置 */
+.setup { max-width: 980px; margin-inline: auto; padding-block: 28px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+@media (min-width: 900px) { .setup { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); column-gap: 64px; padding-top: 56px; } .setup .aside { position: sticky; top: 40px; align-self: start; } }
+.setup .brand-big { font-family: var(--f-display); font-size: 40px; letter-spacing: 0.08em; line-height: 1.1; }
+.steps { display: flex; gap: 6px; }
+.steps i { height: 3px; flex: 1; border-radius: 2px; background: var(--surface-2); }
+.steps i.on { background: var(--rouge); }
+.boot { min-height: 70vh; display: grid; place-items: center; text-align: center; padding: 24px; }
+.boot .inner { display: grid; gap: 10px; justify-items: center; }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+</style>
+
+<div id="app">
+  <div class="boot"><div class="inner">
+    <div class="brand" style="font-size:32px">气色簿</div>
+    <p class="muted" id="boot-msg">正在打开你的记录，包括今日七件事、体重趋势和护肤方案。</p>
+  </div></div>
+</div>
+
+<!-- htm 3.1.1 + Preact，Apache-2.0 / MIT -->
+<script>
+!function(e,n){"object"==typeof exports&&"undefined"!=typeof module?n(exports):"function"==typeof define&&define.amd?define(["exports"],n):n(e.htmPreact={})}(this,function(e){var n,_,t,o,r,u,l,i={},c=[],f=/acit|ex(?:s|g|n|p|$)|rph|grid|ows|mnc|ntw|ine[ch]|zoo|^ord|itera/i;function s(e,n){for(var _ in n)e[_]=n[_];return e}function a(e){var n=e.parentNode;n&&n.removeChild(e)}function p(e,_,t){var o,r,u,l={};for(u in _)"key"==u?o=_[u]:"ref"==u?r=_[u]:l[u]=_[u];if(arguments.length>2&&(l.children=arguments.length>3?n.call(arguments,2):t),"function"==typeof e&&null!=e.defaultProps)for(u in e.defaultProps)void 0===l[u]&&(l[u]=e.defaultProps[u]);return h(e,l,o,r,null)}function h(e,n,o,r,u){var l={type:e,props:n,key:o,ref:r,__k:null,__:null,__b:0,__e:null,__d:void 0,__c:null,__h:null,constructor:void 0,__v:null==u?++t:u};return null!=_.vnode&&_.vnode(l),l}function d(e){return e.children}function v(e,n){this.props=e,this.context=n}function y(e,n){if(null==n)return e.__?y(e.__,e.__.__k.indexOf(e)+1):null;for(var _;n<e.__k.length;n++)if(null!=(_=e.__k[n])&&null!=_.__e)return _.__e;return"function"==typeof e.type?y(e):null}function m(e){var n,_;if(null!=(e=e.__)&&null!=e.__c){for(e.__e=e.__c.base=null,n=0;n<e.__k.length;n++)if(null!=(_=e.__k[n])&&null!=_.__e){e.__e=e.__c.base=_.__e;break}return m(e)}}function g(e){(!e.__d&&(e.__d=!0)&&o.push(e)&&!k.__r++||u!==_.debounceRendering)&&((u=_.debounceRendering)||r)(k)}function k(){for(var e;k.__r=o.length;)e=o.sort(function(e,n){return e.__v.__b-n.__v.__b}),o=[],e.some(function(e){var n,_,t,o,r,u;e.__d&&(r=(o=(n=e).__v).__e,(u=n.__P)&&(_=[],(t=s({},o)).__v=o.__v+1,D(u,o,t,n.__n,void 0!==u.ownerSVGElement,null!=o.__h?[r]:null,_,null==r?y(o):r,o.__h),w(_,o),o.__e!=r&&m(o)))})}function b(e,n,_,t,o,r,u,l,f,s){var a,p,v,m,g,k,b,H=t&&t.__k||c,E=H.length;for(_.__k=[],a=0;a<n.length;a++)if(null!=(m=_.__k[a]=null==(m=n[a])||"boolean"==typeof m?null:"string"==typeof m||"number"==typeof m||"bigint"==typeof m?h(null,m,null,null,m):Array.isArray(m)?h(d,{children:m},null,null,null):m.__b>0?h(m.type,m.props,m.key,null,m.__v):m)){if(m.__=_,m.__b=_.__b+1,null===(v=H[a])||v&&m.key==v.key&&m.type===v.type)H[a]=void 0;else for(p=0;p<E;p++){if((v=H[p])&&m.key==v.key&&m.type===v.type){H[p]=void 0;break}v=null}D(e,m,v=v||i,o,r,u,l,f,s),g=m.__e,(p=m.ref)&&v.ref!=p&&(b||(b=[]),v.ref&&b.push(v.ref,null,m),b.push(p,m.__c||g,m)),null!=g?(null==k&&(k=g),"function"==typeof m.type&&null!=m.__k&&m.__k===v.__k?m.__d=f=C(m,f,e):f=x(e,m,v,H,g,f),s||"option"!==_.type?"function"==typeof _.type&&(_.__d=f):e.value=""):f&&v.__e==f&&f.parentNode!=e&&(f=y(v))}for(_.__e=k,a=E;a--;)null!=H[a]&&("function"==typeof _.type&&null!=H[a].__e&&H[a].__e==_.__d&&(_.__d=y(t,a+1)),A(H[a],H[a]));if(b)for(a=0;a<b.length;a++)U(b[a],b[++a],b[++a])}function C(e,n,_){var t,o;for(t=0;t<e.__k.length;t++)(o=e.__k[t])&&(o.__=e,n="function"==typeof o.type?C(o,n,_):x(_,o,o,e.__k,o.__e,n));return n}function x(e,n,_,t,o,r){var u,l,i;if(void 0!==n.__d)u=n.__d,n.__d=void 0;else if(null==_||o!=r||null==o.parentNode)e:if(null==r||r.parentNode!==e)e.appendChild(o),u=null;else{for(l=r,i=0;(l=l.nextSibling)&&i<t.length;i+=2)if(l==o)break e;e.insertBefore(o,r),u=r}return void 0!==u?u:o.nextSibling}function H(e,n,_){"-"===n[0]?e.setProperty(n,_):e[n]=null==_?"":"number"!=typeof _||f.test(n)?_:_+"px"}function E(e,n,_,t,o){var r;e:if("style"===n)if("string"==typeof _)e.style.cssText=_;else{if("string"==typeof t&&(e.style.cssText=t=""),t)for(n in t)_&&n in _||H(e.style,n,"");if(_)for(n in _)t&&_[n]===t[n]||H(e.style,n,_[n])}else if("o"===n[0]&&"n"===n[1])r=n!==(n=n.replace(/Capture$/,"")),n=n.toLowerCase()in e?n.toLowerCase().slice(2):n.slice(2),e.l||(e.l={}),e.l[n+r]=_,_?t||e.addEventListener(n,r?S:P,r):e.removeEventListener(n,r?S:P,r);else if("dangerouslySetInnerHTML"!==n){if(o)n=n.replace(/xlink[H:h]/,"h").replace(/sName$/,"s");else if("href"!==n&&"list"!==n&&"form"!==n&&"tabIndex"!==n&&"download"!==n&&n in e)try{e[n]=null==_?"":_;break e}catch(e){}"function"==typeof _||(null!=_&&(!1!==_||"a"===n[0]&&"r"===n[1])?e.setAttribute(n,_):e.removeAttribute(n))}}function P(e){this.l[e.type+!1](_.event?_.event(e):e)}function S(e){this.l[e.type+!0](_.event?_.event(e):e)}function D(e,n,t,o,r,u,l,i,c){var f,a,p,h,y,m,g,k,C,x,H,E=n.type;if(void 0!==n.constructor)return null;null!=t.__h&&(c=t.__h,i=n.__e=t.__e,n.__h=null,u=[i]),(f=_.__b)&&f(n);try{e:if("function"==typeof E){if(k=n.props,C=(f=E.contextType)&&o[f.__c],x=f?C?C.props.value:f.__:o,t.__c?g=(a=n.__c=t.__c).__=a.__E:("prototype"in E&&E.prototype.render?n.__c=a=new E(k,x):(n.__c=a=new v(k,x),a.constructor=E,a.render=M),C&&C.sub(a),a.props=k,a.state||(a.state={}),a.context=x,a.__n=o,p=a.__d=!0,a.__h=[]),null==a.__s&&(a.__s=a.state),null!=E.getDerivedStateFromProps&&(a.__s==a.state&&(a.__s=s({},a.__s)),s(a.__s,E.getDerivedStateFromProps(k,a.__s))),h=a.props,y=a.state,p)null==E.getDerivedStateFromProps&&null!=a.componentWillMount&&a.componentWillMount(),null!=a.componentDidMount&&a.__h.push(a.componentDidMount);else{if(null==E.getDerivedStateFromProps&&k!==h&&null!=a.componentWillReceiveProps&&a.componentWillReceiveProps(k,x),!a.__e&&null!=a.shouldComponentUpdate&&!1===a.shouldComponentUpdate(k,a.__s,x)||n.__v===t.__v){a.props=k,a.state=a.__s,n.__v!==t.__v&&(a.__d=!1),a.__v=n,n.__e=t.__e,n.__k=t.__k,n.__k.forEach(function(e){e&&(e.__=n)}),a.__h.length&&l.push(a);break e}null!=a.componentWillUpdate&&a.componentWillUpdate(k,a.__s,x),null!=a.componentDidUpdate&&a.__h.push(function(){a.componentDidUpdate(h,y,m)})}a.context=x,a.props=k,a.state=a.__s,(f=_.__r)&&f(n),a.__d=!1,a.__v=n,a.__P=e,f=a.render(a.props,a.state,a.context),a.state=a.__s,null!=a.getChildContext&&(o=s(s({},o),a.getChildContext())),p||null==a.getSnapshotBeforeUpdate||(m=a.getSnapshotBeforeUpdate(h,y)),H=null!=f&&f.type===d&&null==f.key?f.props.children:f,b(e,Array.isArray(H)?H:[H],n,t,o,r,u,l,i,c),a.base=n.__e,n.__h=null,a.__h.length&&l.push(a),g&&(a.__E=a.__=null),a.__e=!1}else null==u&&n.__v===t.__v?(n.__k=t.__k,n.__e=t.__e):n.__e=T(t.__e,n,t,o,r,u,l,c);(f=_.diffed)&&f(n)}catch(e){n.__v=null,(c||null!=u)&&(n.__e=i,n.__h=!!c,u[u.indexOf(i)]=null),_.__e(e,n,t)}}function w(e,n){_.__c&&_.__c(n,e),e.some(function(n){try{e=n.__h,n.__h=[],e.some(function(e){e.call(n)})}catch(e){_.__e(e,n.__v)}})}function T(e,_,t,o,r,u,l,c){var f,s,p,h=t.props,d=_.props,v=_.type,m=0;if("svg"===v&&(r=!0),null!=u)for(;m<u.length;m++)if((f=u[m])&&(f===e||(v?f.localName==v:3==f.nodeType))){e=f,u[m]=null;break}if(null==e){if(null===v)return document.createTextNode(d);e=r?document.createElementNS("http://www.w3.org/2000/svg",v):document.createElement(v,d.is&&d),u=null,c=!1}if(null===v)h===d||c&&e.data===d||(e.data=d);else{if(u=u&&n.call(e.childNodes),s=(h=t.props||i).dangerouslySetInnerHTML,p=d.dangerouslySetInnerHTML,!c){if(null!=u)for(h={},m=0;m<e.attributes.length;m++)h[e.attributes[m].name]=e.attributes[m].value;(p||s)&&(p&&(s&&p.__html==s.__html||p.__html===e.innerHTML)||(e.innerHTML=p&&p.__html||""))}if(function(e,n,_,t,o){var r;for(r in _)"children"===r||"key"===r||r in n||E(e,r,null,_[r],t);for(r in n)o&&"function"!=typeof n[r]||"children"===r||"key"===r||"value"===r||"checked"===r||_[r]===n[r]||E(e,r,n[r],_[r],t)}(e,d,h,r,c),p)_.__k=[];else if(m=_.props.children,b(e,Array.isArray(m)?m:[m],_,t,o,r&&"foreignObject"!==v,u,l,u?u[0]:t.__k&&y(t,0),c),null!=u)for(m=u.length;m--;)null!=u[m]&&a(u[m]);c||("value"in d&&void 0!==(m=d.value)&&(m!==e.value||"progress"===v&&!m)&&E(e,"value",m,h.value,!1),"checked"in d&&void 0!==(m=d.checked)&&m!==e.checked&&E(e,"checked",m,h.checked,!1))}return e}function U(e,n,t){try{"function"==typeof e?e(n):e.current=n}catch(e){_.__e(e,t)}}function A(e,n,t){var o,r;if(_.unmount&&_.unmount(e),(o=e.ref)&&(o.current&&o.current!==e.__e||U(o,null,n)),null!=(o=e.__c)){if(o.componentWillUnmount)try{o.componentWillUnmount()}catch(e){_.__e(e,n)}o.base=o.__P=null}if(o=e.__k)for(r=0;r<o.length;r++)o[r]&&A(o[r],n,"function"!=typeof e.type);t||null==e.__e||a(e.__e),e.__e=e.__d=void 0}function M(e,n,_){return this.constructor(e,_)}n=c.slice,_={__e:function(e,n){for(var _,t,o;n=n.__;)if((_=n.__c)&&!_.__)try{if((t=_.constructor)&&null!=t.getDerivedStateFromError&&(_.setState(t.getDerivedStateFromError(e)),o=_.__d),null!=_.componentDidCatch&&(_.componentDidCatch(e),o=_.__d),o)return _.__E=_}catch(n){e=n}throw e}},t=0,v.prototype.setState=function(e,n){var _;_=null!=this.__s&&this.__s!==this.state?this.__s:this.__s=s({},this.state),"function"==typeof e&&(e=e(s({},_),this.props)),e&&s(_,e),null!=e&&this.__v&&(n&&this.__h.push(n),g(this))},v.prototype.forceUpdate=function(e){this.__v&&(this.__e=!0,e&&this.__h.push(e),g(this))},v.prototype.render=d,o=[],r="function"==typeof Promise?Promise.prototype.then.bind(Promise.resolve()):setTimeout,k.__r=0,l=0;var F,L,N,W=0,R=[],I=_.__b,O=_.__r,V=_.diffed,q=_.__c,B=_.unmount;function $(e,n){_.__h&&_.__h(L,e,W||n),W=0;var t=L.__H||(L.__H={__:[],__h:[]});return e>=t.__.length&&t.__.push({}),t.__[e]}function j(e){return W=1,G(ee,e)}function G(e,n,_){var t=$(F++,2);return t.t=e,t.__c||(t.__=[_?_(n):ee(void 0,n),function(e){var n=t.t(t.__[0],e);t.__[0]!==n&&(t.__=[n,t.__[1]],t.__c.setState({}))}],t.__c=L),t.__}function z(e,n){var t=$(F++,4);!_.__s&&Z(t.__H,n)&&(t.__=e,t.__H=n,L.__h.push(t))}function J(e,n){var _=$(F++,7);return Z(_.__H,n)&&(_.__=e(),_.__H=n,_.__h=e),_.__}function K(){R.forEach(function(e){if(e.__P)try{e.__H.__h.forEach(X),e.__H.__h.forEach(Y),e.__H.__h=[]}catch(n){e.__H.__h=[],_.__e(n,e.__v)}}),R=[]}_.__b=function(e){L=null,I&&I(e)},_.__r=function(e){O&&O(e),F=0;var n=(L=e.__c).__H;n&&(n.__h.forEach(X),n.__h.forEach(Y),n.__h=[])},_.diffed=function(e){V&&V(e);var n=e.__c;n&&n.__H&&n.__H.__h.length&&(1!==R.push(n)&&N===_.requestAnimationFrame||((N=_.requestAnimationFrame)||function(e){var n,_=function(){clearTimeout(t),Q&&cancelAnimationFrame(n),setTimeout(e)},t=setTimeout(_,100);Q&&(n=requestAnimationFrame(_))})(K)),L=void 0},_.__c=function(e,n){n.some(function(e){try{e.__h.forEach(X),e.__h=e.__h.filter(function(e){return!e.__||Y(e)})}catch(t){n.some(function(e){e.__h&&(e.__h=[])}),n=[],_.__e(t,e.__v)}}),q&&q(e,n)},_.unmount=function(e){B&&B(e);var n=e.__c;if(n&&n.__H)try{n.__H.__.forEach(X)}catch(e){_.__e(e,n.__v)}};var Q="function"==typeof requestAnimationFrame;function X(e){var n=L;"function"==typeof e.__c&&e.__c(),L=n}function Y(e){var n=L;e.__c=e.__(),L=n}function Z(e,n){return!e||e.length!==n.length||n.some(function(n,_){return n!==e[_]})}function ee(e,n){return"function"==typeof n?n(e):n}var ne=function(e,n,_,t){var o;n[0]=0;for(var r=1;r<n.length;r++){var u=n[r++],l=n[r]?(n[0]|=u?1:2,_[n[r++]]):n[++r];3===u?t[0]=l:4===u?t[1]=Object.assign(t[1]||{},l):5===u?(t[1]=t[1]||{})[n[++r]]=l:6===u?t[1][n[++r]]+=l+"":u?(o=e.apply(l,ne(e,l,_,["",null])),t.push(o),l[0]?n[0]|=2:(n[r-2]=0,n[r]=o)):t.push(l)}return t},_e=new Map,te=function(e){var n=_e.get(this);return n||(n=new Map,_e.set(this,n)),(n=ne(this,n.get(e)||(n.set(e,n=function(e){for(var n,_,t=1,o="",r="",u=[0],l=function(e){1===t&&(e||(o=o.replace(/^\s*\n\s*|\s*\n\s*$/g,"")))?u.push(0,e,o):3===t&&(e||o)?(u.push(3,e,o),t=2):2===t&&"..."===o&&e?u.push(4,e,0):2===t&&o&&!e?u.push(5,0,!0,o):t>=5&&((o||!e&&5===t)&&(u.push(t,0,o,_),t=6),e&&(u.push(t,e,0,_),t=6)),o=""},i=0;i<e.length;i++){i&&(1===t&&l(),l(i));for(var c=0;c<e[i].length;c++)n=e[i][c],1===t?"<"===n?(l(),u=[u],t=3):o+=n:4===t?"--"===o&&">"===n?(t=1,o=""):o=n+o[0]:r?n===r?r="":o+=n:'"'===n||"'"===n?r=n:">"===n?(l(),t=1):t&&("="===n?(t=5,_=o,o=""):"/"===n&&(t<5||">"===e[i][c+1])?(l(),3===t&&(u=u[0]),t=u,(u=u[0]).push(2,0,t),t=0):" "===n||"\t"===n||"\n"===n||"\r"===n?(l(),t=2):o+=n),3===t&&"!--"===o&&(t=4,u=u[0])}return l(),u}(e)),n),arguments,[])).length>1?n:n[0]}.bind(p);e.h=p,e.html=te,e.render=function(e,t,o){var r,u,l;_.__&&_.__(e,t),u=(r="function"==typeof o)?null:o&&o.__k||t.__k,l=[],D(t,e=(!r&&o||t).__k=p(d,null,[e]),u||i,i,void 0!==t.ownerSVGElement,!r&&o?[o]:u?null:t.firstChild?n.call(t.childNodes):null,l,!r&&o?o:u?u.__e:t.firstChild,r),w(l,e)},e.Component=v,e.createContext=function(e,n){var _={__c:n="__cC"+l++,__:e,Consumer:function(e,n){return e.children(n)},Provider:function(e){var _,t;return this.getChildContext||(_=[],(t={})[n]=this,this.getChildContext=function(){return t},this.shouldComponentUpdate=function(e){this.props.value!==e.value&&_.some(g)},this.sub=function(e){_.push(e);var n=e.componentWillUnmount;e.componentWillUnmount=function(){_.splice(_.indexOf(e),1),n&&n.call(e)}}),e.children}};return _.Provider.__=_.Consumer.contextType=_},e.useState=j,e.useReducer=G,e.useEffect=function(e,n){var t=$(F++,3);!_.__s&&Z(t.__H,n)&&(t.__=e,t.__H=n,L.__H.__h.push(t))},e.useLayoutEffect=z,e.useRef=function(e){return W=5,J(function(){return{current:e}},[])},e.useImperativeHandle=function(e,n,_){W=6,z(function(){"function"==typeof e?e(n()):e&&(e.current=n())},null==_?_:_.concat(e))},e.useMemo=J,e.useCallback=function(e,n){return W=8,J(function(){return e},n)},e.useContext=function(e){var n=L.context[e.__c],_=$(F++,9);return _.c=e,n?(null==_.__&&(_.__=!0,n.sub(L)),n.props.value):e.__},e.useDebugValue=function(e,n){_.useDebugValue&&_.useDebugValue(n?n(e):e)},e.useErrorBoundary=function(e){var n=$(F++,10),_=j();return n.__=e,L.componentDidCatch||(L.componentDidCatch=function(e){n.__&&n.__(e),_[1](e)}),[_[0],function(){_[1](void 0)}]}});
+
+</script>
+<script>window.QS_OFFLINE = true;</script>
+<script>
+  if (!window.htmPreact) document.getElementById('boot-msg').textContent = '页面组件没有加载成功。请检查网络后重新打开。';
+</script>
+<script>
+/* 气色簿 · 内容库：动作、课表、食物、医美项目。只放数据，不放逻辑。 */
+(function (g) {
+  const QS = (g.QS = g.QS || {});
+
+  QS.THING_KEYS = ['sleep', 'water', 'food', 'move', 'posture', 'am', 'pm'];
+  QS.THINGS = {
+    sleep: { n: '睡够' },
+    water: { n: '喝水' },
+    food: { n: '吃好' },
+    move: { n: '动起来' },
+    posture: { n: '体态' },
+    am: { n: '早护防晒' },
+    pm: { n: '晚护' },
+  };
+
+  /* 每个动作有健身房和在家两个版本，进步记录按版本分开算。 */
+  QS.EX = {
+    squat: { n: '深蹲', m: '臀腿', gym: '杠铃深蹲（不熟练先用史密斯机）', home: '哑铃高脚杯深蹲', rest: 120, cue: '脚掌踩实，膝盖和脚尖同向。蹲到大腿接近水平，起身时用臀腿发力。' },
+    rdl: { n: '罗马尼亚硬拉', m: '臀 · 腿后侧', gym: '杠铃罗马尼亚硬拉', home: '哑铃罗马尼亚硬拉', rest: 120, cue: '膝盖微屈，屁股向后推，背保持平直。重量贴腿下放，感到腿后侧拉紧就起身。' },
+    hip: { n: '臀推', m: '臀', gym: '杠铃或器械臀推', home: '哑铃臀桥（轻松时改单腿）', rest: 90, cue: '下巴微收，肋骨下压。顶峰停 1 秒，用臀部顶起，不要挺腰。' },
+    lunge: { n: '分腿蹲', m: '臀腿', gym: '哑铃保加利亚分腿蹲', home: '后撤弓步（可手持哑铃）', rest: 90, cue: '上身微前倾，前脚全脚掌发力，膝盖不内扣。左右各做完算一组。' },
+    abd: { n: '髋外展', m: '臀中肌', gym: '器械髋外展', home: '弹力带侧向走', rest: 60, cue: '骨盆保持稳定，用臀部外侧发力，身体不要晃。' },
+    legcurl: { n: '腿弯举', m: '腿后侧', gym: '器械腿弯举', home: '毛巾滑动腿弯举', rest: 60, cue: '臀部保持收紧，回程放慢。' },
+    pull: { n: '下拉', m: '背', gym: '高位下拉', home: '弹力带下拉', rest: 90, cue: '先沉肩，手肘向下向后带，胸口迎向把手，身体不要甩。' },
+    row: { n: '划船', m: '背 · 体态', gym: '坐姿划船或单臂哑铃划船', home: '俯身哑铃划船', rest: 90, cue: '背部平直，手肘贴身向后，肩胛骨夹紧再慢慢放回。' },
+    chest: { n: '推胸', m: '胸 · 手臂', gym: '哑铃卧推或器械推胸', home: '俯卧撑（吃力就改跪姿或扶高处）', rest: 90, cue: '肩胛骨收紧，手肘和身体约成 45°，全程控制。' },
+    ohp: { n: '肩推', m: '肩', gym: '坐姿哑铃推举', home: '站姿哑铃推举', rest: 90, cue: '核心收紧，肋骨不外翻，把重量推到头顶正上方。' },
+    lat: { n: '侧平举', m: '肩线条', gym: '哑铃侧平举', home: '哑铃或水瓶侧平举', rest: 60, cue: '手肘微屈，抬到与肩同高，不耸肩，重量轻一点也要控制住。' },
+    face: { n: '面拉', m: '后肩 · 体态', gym: '绳索面拉', home: '弹力带面拉', rest: 60, cue: '拉向眉心，手肘高于手腕，最后打开肩胛。对圆肩很有用。' },
+    curl: { n: '弯举', m: '手臂', gym: '哑铃弯举', home: '哑铃或弹力带弯举', rest: 60, cue: '上臂贴身不动，放下时慢一点。' },
+    tri: { n: '臂屈伸', m: '手臂后侧', gym: '绳索下压', home: '椅子臂屈伸或弹力带下压', rest: 60, cue: '上臂固定，只动小臂，最低点不要耸肩。' },
+    plank: { n: '平板支撑', m: '核心', gym: '平板支撑', home: '平板支撑', unit: 'sec', rest: 60, cue: '从头到脚一条直线，收腹夹臀，塌腰就结束这一组。' },
+    side: { n: '侧平板', m: '腰侧', gym: '侧平板', home: '侧平板', unit: 'sec', rest: 45, cue: '髋部抬高不下沉，左右各做完算一组。' },
+    deadbug: { n: '死虫', m: '核心 · 体态', gym: '死虫', home: '死虫', unit: 'bw', rest: 45, cue: '腰贴地，对侧手脚缓慢伸远，腰一离地就收回。' },
+    pallof: { n: '抗旋转推', m: '核心 · 腰线', gym: '绳索抗旋转推', home: '弹力带抗旋转推', rest: 45, cue: '双手向前推出时身体不被拉转，左右各做完算一组。' },
+  };
+
+  /* [动作, 组数, 次数下限, 次数上限]；计时动作的单位是秒。 */
+  QS.SESS = {
+    fullA: { name: '全身 A', focus: '深蹲和背部', items: [['squat', 3, 8, 12], ['row', 3, 8, 12], ['chest', 3, 8, 12], ['hip', 2, 12, 15], ['face', 2, 12, 15], ['plank', 2, 30, 45]] },
+    fullB: { name: '全身 B', focus: '硬拉和肩部', items: [['rdl', 3, 8, 12], ['pull', 3, 8, 12], ['ohp', 3, 8, 12], ['lunge', 2, 10, 12], ['lat', 2, 12, 15], ['deadbug', 2, 8, 10]] },
+    fullC: { name: '全身 C', focus: '臀部和肩背线条', items: [['hip', 3, 8, 12], ['row', 3, 10, 12], ['chest', 2, 10, 12], ['lunge', 2, 10, 12], ['face', 2, 12, 15], ['pallof', 2, 10, 12]] },
+    lowA: { name: '下肢 · 臀 A', focus: '臀腿力量', items: [['squat', 3, 8, 12], ['rdl', 3, 8, 12], ['hip', 3, 10, 15], ['abd', 2, 15, 20], ['deadbug', 2, 8, 10]] },
+    upA: { name: '上肢 · 背 A', focus: '背部、体态和手臂', items: [['pull', 3, 8, 12], ['chest', 3, 8, 12], ['row', 3, 10, 12], ['lat', 3, 12, 15], ['face', 3, 12, 15], ['curl', 2, 12, 15], ['tri', 2, 12, 15], ['plank', 2, 30, 45]] },
+    lowB: { name: '下肢 · 臀 B', focus: '臀部和单腿', items: [['hip', 3, 8, 12], ['lunge', 3, 10, 12], ['rdl', 3, 10, 12], ['legcurl', 2, 12, 15], ['side', 2, 20, 30]] },
+    upB: { name: '上肢 · 背 B', focus: '肩背线条和手臂', items: [['row', 3, 8, 12], ['ohp', 3, 8, 12], ['pull', 3, 10, 12], ['curl', 2, 12, 15], ['tri', 2, 12, 15], ['face', 2, 15, 20], ['pallof', 2, 10, 12]] },
+    cardio: { name: '有氧 + 核心', focus: '心肺和腰线', note: '先做 30 分钟中等强度有氧，快走、爬坡、椭圆机都行，强度是能说话但唱不了歌。', items: [['deadbug', 3, 8, 10], ['pallof', 3, 10, 12], ['side', 2, 20, 30], ['plank', 2, 30, 45]] },
+  };
+  QS.PROGRAMS = {
+    2: ['fullA', 'fullB'],
+    3: ['fullA', 'fullB', 'fullC'],
+    4: ['lowA', 'upA', 'lowB', 'upB'],
+    5: ['lowA', 'upA', 'cardio', 'lowB', 'upB'],
+  };
+
+  QS.POSTURE = [
+    { n: '下巴后缩', dose: '10 次，每次停 3 秒', how: '站直或靠墙，下巴水平向后收，头顶向上延伸。改善头前伸。' },
+    { n: '靠墙天使', dose: '2 组 × 10 次', how: '后脑、上背、臀部贴墙，手臂贴墙上下滑动，肋骨不外翻。' },
+    { n: '胸椎伸展', dose: '1 分钟', how: '双手抱头，上背靠椅背或泡沫轴缓慢后仰，腰不要塌。' },
+    { n: '门框拉伸胸肌', dose: '每侧 30 秒 × 2', how: '小臂贴门框，身体慢慢向前送，感觉胸前拉伸。' },
+    { n: '俯卧 Y 字抬手', dose: '2 组 × 10 次', how: '俯卧，手臂成 Y 字，拇指朝上，用肩胛发力抬起。' },
+    { n: '跪姿屈髋拉伸', dose: '每侧 30 秒 × 2', how: '单膝跪地，收紧臀部让骨盆后倾，身体微微前移。改善骨盆前倾。' },
+    { n: '臀桥', dose: '2 组 × 12 次', how: '仰卧屈膝，收紧臀部顶起，肋骨下压，顶峰停 1 秒。' },
+  ];
+
+  /* [名称, 份量, 热量, 蛋白质, 碳水, 脂肪]，均为常见估算值。 */
+  QS.FOODS = [
+    ['米饭', '一小碗 150g', 174, 4, 39, 1],
+    ['馒头', '一个 100g', 223, 7, 47, 1],
+    ['面条', '一碗熟面 300g', 330, 10, 66, 2],
+    ['全麦面包', '两片 70g', 175, 8, 30, 3],
+    ['燕麦片', '40g', 150, 5, 26, 3],
+    ['红薯', '中等 200g', 172, 3, 40, 0],
+    ['玉米', '一根', 168, 6, 34, 2],
+    ['水煮蛋', '1 个', 70, 6, 1, 5],
+    ['鸡胸肉', '熟重 100g', 165, 31, 0, 4],
+    ['瘦牛肉', '熟重 100g', 180, 27, 0, 8],
+    ['三文鱼', '100g', 200, 20, 0, 13],
+    ['虾仁', '熟重 100g', 99, 24, 0, 1],
+    ['北豆腐', '100g', 116, 12, 2, 5],
+    ['无糖豆浆', '300ml', 96, 9, 3, 5],
+    ['牛奶', '250ml', 150, 8, 12, 8],
+    ['无糖希腊酸奶', '150g', 120, 13, 8, 4],
+    ['乳清蛋白', '1 勺', 120, 24, 3, 2],
+    ['清炒绿叶菜', '200g', 80, 4, 8, 4],
+    ['西兰花', '200g', 68, 8, 8, 1],
+    ['苹果', '1 个', 104, 1, 27, 0],
+    ['香蕉', '1 根', 93, 1, 22, 0],
+    ['坚果', '一小把 25g', 150, 5, 5, 12],
+    ['美式咖啡', '一杯', 5, 0, 1, 0],
+    ['拿铁', '350ml', 150, 8, 12, 8],
+    ['少糖奶茶', '500ml', 260, 3, 40, 10],
+    ['全糖奶茶', '500ml', 400, 3, 70, 12],
+    ['牛肉面', '一碗', 550, 25, 75, 15],
+    ['麻辣烫', '中等一份', 650, 28, 70, 28],
+    ['黄焖鸡米饭', '一份', 850, 35, 100, 32],
+    ['鸡胸沙拉', '一份', 400, 30, 30, 16],
+    ['小笼包', '6 个', 350, 14, 40, 14],
+    ['便利店饭团', '1 个', 200, 5, 40, 2],
+  ];
+
+  QS.SEASON = {
+    spring: '温差大、花粉多，皮肤容易敏感，这段时间先别加新活性。',
+    summer: '紫外线最强也最爱出油，户外每 2 小时补一次防晒，保湿换清爽质地。',
+    autumn: '空气转干，夏天的晒斑和暗沉开始显现，适合逐步加提亮成分。',
+    winter: '干冷加暖气，皮肤屏障最脆弱。保湿升一档，酸类频率降一档，防晒不要停。',
+  };
+
+  /*
+   * 医美项目参考。interval 是常见复做间隔（天），phases 是 [急性期结束日, 恢复期结束日]，
+   * 之后到第 14 天算稳定期；pause 是建议暂停 A 醇和酸类的天数。全部是一般参考，以面诊医生的方案为准。
+   * reg：device = 医疗器械注册证；drug = 药品批准文号；equip = 设备注册证。
+   */
+  QS.MED = [
+    { id: 'botox', n: '肉毒素注射', cat: '注射', solves: ['aging', 'contour'], for: '动态皱纹、咬肌肥大', effect: '约 3–6 个月', interval: 120, intervalText: '两次至少间隔 3 个月，常见 4–6 个月一次，频繁补打可能产生抗体', phases: [3, 7], pause: 2, down: '针眼、轻微肿胀或淤青 1–3 天', care: ['4 小时内不平躺、不按摩注射部位', '2 周内不按摩注射部位，少蒸桑拿', '1 周内不喝酒'], risk: '眼睑下垂、表情不自然、咀嚼无力，多数几个月内恢复。', reg: 'drug' },
+    { id: 'ha', n: '玻尿酸填充', cat: '注射', solves: ['aging', 'contour'], for: '凹陷、轮廓、静态纹', effect: '约 6–18 个月，因产品和部位不同', interval: 365, intervalText: '通常 9–18 个月后评估是否补充', phases: [3, 7], pause: 3, down: '肿胀、淤青 3–7 天', care: ['24 小时内不沾水、不化妆', '2 周内不按压注射部位', '1 周内不喝酒、不蒸桑拿'], risk: '结节、移位，少见但严重的是血管栓塞。出现剧痛、皮肤发白发紫或视力变化要立刻就医。', reg: 'device', weightNote: true },
+    { id: 'skinbooster', n: '水光注射', cat: '注射', solves: ['aging', 'tone'], for: '干纹、粗糙、肤色暗', effect: '约 2–4 周起效，维持 3–6 个月', interval: 28, intervalText: '疗程常见每 3–4 周一次、共 3 次，之后 3–6 个月维持', phases: [3, 7], pause: 7, down: '针眼和轻微红肿 1–3 天', care: ['24 小时内不沾水、不化妆', '术后用无菌修护面膜或医用敷料', '1 周内严格防晒，不用酸和 A 醇'], risk: '感染、硬结、过敏。持续硬结要回去找医生。', reg: 'device' },
+    { id: 'ipl', n: '光子嫩肤', cat: '光电', solves: ['tone', 'acne'], for: '晒斑、泛红、肤色不均', effect: '一个疗程后维持数月', interval: 28, intervalText: '每 3–4 周一次，3–5 次一个疗程', phases: [1, 5], pause: 5, down: '发红发热 1–2 天，色斑可能变深结痂 5–7 天', care: ['术后冷敷 15–20 分钟', '严格防晒至少 4 周', '结痂自然脱落，不要抠'], risk: '色素沉着、灼伤。黄褐斑可能加重，必须先面诊。', reg: 'equip' },
+    { id: 'pico', n: '皮秒激光', cat: '光电', solves: ['tone'], for: '色斑、痘印、毛孔', effect: '多次治疗后逐步改善', interval: 45, intervalText: '嫩肤约 4 周一次，祛斑常见 2–3 个月一次', phases: [2, 10], pause: 7, down: '嫩肤红热 1–3 天，祛斑结痂 7–10 天', care: ['结痂前不沾水或按医嘱清洁', '严格防晒至少 8 周', '结痂自然脱落，不要抠'], risk: '色素沉着或减退。黄褐斑要先面诊。', reg: 'equip' },
+    { id: 'fractional', n: '点阵激光', cat: '光电', solves: ['aging', 'acne'], for: '痘坑、细纹、粗糙', effect: '3–6 个月内逐步改善', interval: 90, intervalText: '非剥脱约 4 周一次，剥脱常见 3–6 个月一次', phases: [3, 10], pause: 14, down: '红肿结痂 5–10 天', care: ['按医嘱使用修复产品', '严格防晒至少 8 周', '结痂自然脱落，不要抠'], risk: '色沉、感染、持续发红。深肤色和易留疤要提前说明。', reg: 'equip' },
+    { id: 'thermage', n: '热玛吉（射频紧肤）', cat: '光电', solves: ['aging'], for: '面部松弛', effect: '约 2–6 个月逐步显现，维持约 1 年', interval: 365, intervalText: '通常一年一次，不建议频繁做', phases: [0, 3], pause: 3, down: '发红发热数小时到 1 天', care: ['1 周内少泡温泉、少蒸桑拿', '加强保湿和防晒'], risk: '烫伤、凹陷、麻木，操作者经验很重要。', reg: 'equip' },
+    { id: 'hifu', n: '超声炮 / HIFU', cat: '光电', solves: ['aging', 'contour'], for: '松弛、下颌线', effect: '约 2–3 个月显现，维持 6–12 个月', interval: 270, intervalText: '常见 6–12 个月一次', phases: [0, 3], pause: 3, down: '酸胀、轻肿 1–3 天', care: ['1 周内少泡温泉、少蒸桑拿', '加强保湿和防晒'], risk: '疼痛、灼伤、神经一过性损伤。脸本来就瘦的人要谨慎。', reg: 'equip', weightNote: true },
+    { id: 'peel', n: '果酸 / 水杨酸焕肤', cat: '焕肤', solves: ['acne', 'tone'], for: '痘痘、闭口、暗沉', effect: '4–6 次后较明显', interval: 21, intervalText: '每 2–4 周一次，4–6 次一个疗程', phases: [2, 7], pause: 7, down: '发红、轻微脱屑 1–5 天', care: ['1 周内不用酸和 A 醇', '严格防晒', '脱屑不要撕'], risk: '灼伤、色沉。正在长炎症痘或口服异维 A 酸要提前告诉医生。', reg: 'equip' },
+    { id: 'rfneedle', n: '黄金微针 / 射频微针', cat: '光电', solves: ['acne', 'aging'], for: '痘坑、毛孔、松弛', effect: '3 次左右较明显', interval: 45, intervalText: '每 4–8 周一次，3–4 次一个疗程', phases: [3, 7], pause: 7, down: '红肿和点状结痂 2–5 天', care: ['24 小时内不沾水', '按医嘱使用修复产品', '严格防晒'], risk: '感染、色沉。', reg: 'equip' },
+    { id: 'hydra', n: '小气泡清洁', cat: '皮肤护理', solves: ['acne'], for: '黑头、油脂清洁', effect: '短期清洁', interval: 21, intervalText: '2–4 周一次即可，过度清洁伤屏障', phases: [0, 1], pause: 1, down: '基本没有', care: ['当天加强保湿', '当晚不用酸和 A 醇'], risk: '使用共用耗材要确认消毒和一次性吸头。', reg: 'equip' },
+    { id: 'thread', n: '线雕', cat: '手术类', solves: ['aging', 'contour'], for: '松弛下垂', effect: '约 12–18 个月', interval: 450, intervalText: '常见 12–18 个月后评估', phases: [3, 10], pause: 7, down: '肿胀淤青 7–14 天', care: ['2 周内少做大幅度表情', '1 个月内不按摩面部'], risk: '感染、线头外露、不对称，需要面诊。', reg: 'device', weightNote: true },
+  ];
+
+  QS.MED_ADVICE = {
+    acne: { t: '痘痘出油', d: '持续长痘、结节和囊肿先看皮肤科，用药是第一选择。果酸焕肤和光子可以配合，一般不单独依靠。' },
+    tone: { t: '暗沉色斑', d: '防晒决定了效果能留多久。光子和皮秒都要先确认是不是黄褐斑，黄褐斑做错光电可能加重。' },
+    aging: { t: '细纹松弛', d: '动态皱纹对应肉毒素，干纹对应保湿和水光，松弛对应射频和超声。先分清是哪一种。' },
+    contour: { t: '水肿和脸型', d: '水肿靠作息和控盐，医美帮不上。下颌线模糊多半和体脂、头前伸有关，减重稳定后再评估。' },
+  };
+
+  QS.MED_CHECKS = [
+    { k: 'lic', t: '机构有《医疗机构执业许可证》，诊疗科目含医疗美容', h: '生活美容店不能做注射和医疗光电。可在所在省市卫健委网站核对。' },
+    { k: 'doc', t: '操作的是有执业资质的医生', h: '让机构出示医师执业证书，可在国家卫健委官网或“医通办”App 查询。' },
+    { k: 'prod', t: '产品有批文，当面验货', h: '玻尿酸、水光看医疗器械注册证号（国械注准 / 国械注进）；肉毒素看药品批准文号或进口药品注册证。可在国家药监局官网数据查询里核对。' },
+    { k: 'contra', t: '已告诉医生孕哺、过敏史和正在用的药', h: '尤其是异维 A 酸、抗凝药、免疫相关疾病、瘢痕体质。' },
+    { k: 'consent', t: '看过知情同意书，问清风险和出事后的联系人', h: '问清楚并发症怎么处理、费用谁承担。' },
+    { k: 'price', t: '总价写清楚，不当场加项、不办医美贷', h: '拿到明细单，回家想过再决定。' },
+  ];
+})(typeof globalThis !== 'undefined' ? globalThis : window);
+
+</script>
+<script>
+/* 气色簿 · 计划和分析逻辑。全部是纯函数，不碰页面，也不碰存储。 */
+(function (g) {
+  const QS = (g.QS = g.QS || {});
+
+  // ---------- 日期 ----------
+  const pad = (n) => String(n).padStart(2, '0');
+  const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const parse = (s) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d, 12); };
+  const today = () => ymd(new Date());
+  const addDays = (s, n) => { const d = parse(s); d.setDate(d.getDate() + n); return ymd(d); };
+  const diff = (a, b) => Math.round((parse(a) - parse(b)) / 864e5);
+  const weekStart = (s) => addDays(s, -((parse(s).getDay() + 6) % 7));
+  const WEEK = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+  const fmtDate = (s) => { const d = parse(s); return `${d.getMonth() + 1}月${d.getDate()}日 ${WEEK[d.getDay()]}`; };
+  const fmtShort = (s) => { const d = parse(s); return `${d.getMonth() + 1}/${d.getDate()}`; };
+  const round1 = (n) => Math.round(n * 10) / 10;
+  const clamp = (n, a, b) => Math.min(b, Math.max(a, n));
+
+  // ---------- 节气 ----------
+  const TERMS = [['小寒', 0, 5.4055], ['大寒', 0, 20.12], ['立春', 1, 3.87], ['雨水', 1, 18.73], ['惊蛰', 2, 5.63], ['春分', 2, 20.646], ['清明', 3, 4.81], ['谷雨', 3, 20.1], ['立夏', 4, 5.52], ['小满', 4, 21.04], ['芒种', 5, 5.678], ['夏至', 5, 21.37], ['小暑', 6, 7.108], ['大暑', 6, 22.83], ['立秋', 7, 7.5], ['处暑', 7, 23.13], ['白露', 8, 7.646], ['秋分', 8, 23.042], ['寒露', 9, 8.318], ['霜降', 9, 23.438], ['立冬', 10, 7.438], ['小雪', 10, 22.36], ['大雪', 11, 7.18], ['冬至', 11, 21.94]];
+  function termDate(year, i) {
+    const [name, m, c] = TERMS[i];
+    const y = year % 100;
+    const L = m < 2 ? Math.floor((y - 1) / 4) : Math.floor(y / 4);
+    let day = Math.floor(y * 0.2422 + c) - L;
+    if (year === 2026 && name === '雨水') day -= 1;
+    if (year === 2082 && name === '大寒') day += 1;
+    if (year === 2084 && name === '春分') day += 1;
+    return ymd(new Date(year, m, day, 12));
+  }
+  function solarTerm(date) {
+    const year = parseInt(date, 10);
+    let found = null;
+    for (const y of [year - 1, year]) {
+      for (let i = 0; i < 24; i++) {
+        const td = termDate(y, i);
+        if (td <= date) found = { name: TERMS[i][0], i, date: td };
+      }
+    }
+    const season = found.i >= 2 && found.i <= 7 ? 'spring' : found.i >= 8 && found.i <= 13 ? 'summer' : found.i >= 14 && found.i <= 19 ? 'autumn' : 'winter';
+    return { name: found.name, day: diff(date, found.date) + 1, season, tip: QS.SEASON ? QS.SEASON[season] : '' };
+  }
+
+  // ---------- 身体指标 ----------
+  const bmi = (w, h) => w / Math.pow(h / 100, 2);
+  function bmiBand(b) {
+    if (b < 18.5) return { l: '偏瘦', s: 'warn' };
+    if (b < 24) return { l: '正常', s: 'good' };
+    if (b < 28) return { l: '超重', s: 'warn' };
+    return { l: '肥胖', s: 'crit' };
+  }
+  function waistBand(cm, sex) {
+    const a = sex === 'm' ? 85 : 80;
+    if (cm < a) return { l: '正常', s: 'good' };
+    if (cm < a + 5) return { l: '中心型肥胖前期', s: 'warn' };
+    return { l: '中心型肥胖', s: 'crit' };
+  }
+
+  const MODE_NAME = { lose: '减脂期', recomp: '塑形期', keep: '维持期', build: '增重增肌期', care: '健康优先' };
+
+  /* 根据资料算出每日目标。安全规则都放在这里，界面只负责显示。 */
+  function plan(p, weightNow, date) {
+    const d0 = date || today();
+    const w = weightNow || p.weight;
+    const h = p.height;
+    const age = p.birthYear ? parseInt(d0, 10) - p.birthYear : 30;
+    const sex = p.sex === 'm' ? 'm' : 'f';
+    const b = bmi(w, h);
+    const bmr = Math.round(10 * w + 6.25 * h - 5 * age + (sex === 'm' ? 5 : -161));
+    const factor = { sedentary: 1.2, light: 1.375, moderate: 1.55, high: 1.725 }[p.activity || 'light'] || 1.375;
+    const tdee = Math.round(bmr * factor);
+    const safe = p.safety || {};
+    const goals = p.goals || [];
+    const minW = Math.ceil(18.5 * Math.pow(h / 100, 2) * 10) / 10;
+    const warnings = [];
+    let goal = p.goalWeight || null;
+    if (goal && goal < minW) {
+      warnings.push({ k: 'goalLow', s: 'crit', t: `目标 ${goal} kg 对应的 BMI 是 ${bmi(goal, h).toFixed(1)}，低于健康下限 18.5。程序按 ${minW} kg 计算，不会往更低的数字减。` });
+      goal = minW;
+    }
+
+    let mode, wantDeficit = 0, surplus = 0;
+    if (safe.preg || safe.under18 || safe.ed) mode = 'care';
+    else if (b < 18.5) { mode = 'build'; surplus = 200; }
+    else if (!goals.includes('lose')) mode = goals.includes('muscle') ? 'recomp' : 'keep';
+    else if (goal && goal >= w - 0.3) mode = 'recomp';
+    else if (b < 20) { mode = 'recomp'; wantDeficit = Math.min(150, tdee * 0.07); }
+    else if (b < 24) { mode = 'lose'; wantDeficit = Math.min(400, tdee * 0.15); }
+    else { mode = 'lose'; wantDeficit = Math.min(500, tdee * 0.2); }
+
+    const floor = Math.max(sex === 'm' ? 1500 : 1200, bmr);
+    let kcal = tdee + surplus;
+    if (wantDeficit) kcal = Math.max(floor, tdee - wantDeficit);
+    kcal = Math.round(kcal / 10) * 10;
+    const deficit = wantDeficit ? Math.max(0, tdee - kcal) : 0;
+
+    const refW = b >= 28 ? 24 * Math.pow(h / 100, 2) : w;
+    const protein = Math.round(refW * (mode === 'lose' ? 1.8 : 1.6));
+    const fat = Math.round(Math.max(0.7 * w, (kcal * 0.25) / 9));
+    const carb = Math.max(0, Math.round((kcal - protein * 4 - fat * 9) / 4));
+    const water = clamp(Math.round((w * 33) / 50) * 50, 1500, 3000);
+    const weekly = Math.round(((deficit * 7) / 7700) * 100) / 100;
+
+    if (b < 18.5) warnings.push({ k: 'under', s: 'warn', t: `现在的 BMI 是 ${b.toFixed(1)}，已经偏瘦，程序不会安排减重。重点放在吃够、力量训练和皮肤状态上。` });
+    if (mode === 'lose' && deficit < 200) warnings.push({ k: 'floor', s: 'info', t: '你的日常消耗和基础代谢很接近，再少吃也不划算。这时候靠步数和训练拉开差距更有效。' });
+    if (safe.preg) warnings.push({ k: 'preg', s: 'crit', t: '孕期、备孕或哺乳期不做减重，也不用 A 醇类成分。饮食和运动请和产科医生确认，医美项目暂缓。' });
+    if (safe.under18) warnings.push({ k: 'minor', s: 'crit', t: '未满 18 岁还在发育，程序不安排热量缺口。想调整体重，请和家长一起咨询医生。' });
+    if (safe.ed) warnings.push({ k: 'ed', s: 'crit', t: '程序已隐藏热量和目标体重，只保留日常习惯。如果对吃东西或体重感到痛苦，建议联系心理或营养专业人士。' });
+    if (safe.chronic) warnings.push({ k: 'chronic', s: 'warn', t: '有慢性病或长期用药时，热量和蛋白质目标请先和医生确认，尤其是糖尿病、肾病和甲状腺问题。' });
+
+    return { mode, modeName: MODE_NAME[mode], bmr, tdee, kcal, protein, fat, carb, water, sleep: 7, steps: 8000, deficit, weekly, bmi: b, band: bmiBand(b), minW, goal, warnings, showNumbers: !safe.ed };
+  }
+
+  // ---------- 体重趋势 ----------
+  function weightSeries(days) {
+    const pts = Object.keys(days).filter((k) => days[k] && days[k].weight != null).sort().map((k) => ({ date: k, w: days[k].weight }));
+    return pts.map((pt, i) => {
+      let sum = 0, n = 0;
+      for (let j = i; j >= 0 && diff(pt.date, pts[j].date) < 7; j--) { sum += pts[j].w; n++; }
+      return { date: pt.date, w: pt.w, avg: Math.round((sum / n) * 100) / 100 };
+    });
+  }
+  function latestWeight(days, fallback) {
+    const s = weightSeries(days);
+    return s.length ? s[s.length - 1].avg : fallback;
+  }
+  function pace(series, pl, improving) {
+    if (series.length < 4) return { status: 'none' };
+    const last = series[series.length - 1];
+    const span = diff(last.date, series[0].date);
+    if (span < 10) return { status: 'none' };
+    const target = addDays(last.date, -14);
+    let base = series[0];
+    for (const s of series) if (s.date <= target) base = s;
+    const d = diff(last.date, base.date);
+    const perWeek = ((last.avg - base.avg) / d) * 7;
+    const pct = (perWeek / base.avg) * 100;
+    let status = 'good';
+    if (pl.mode === 'lose' || pl.mode === 'recomp') {
+      if (pct < -1) status = 'fast';
+      else if (pl.mode === 'lose' && Math.abs(perWeek) < 0.1 && span >= 21) status = improving ? 'recomp' : 'plateau';
+      else if (perWeek > 0.15) status = 'up';
+    } else if (pl.mode === 'build' && perWeek < -0.1) status = 'down';
+    return { status, perWeek: Math.round(perWeek * 100) / 100, pct: Math.round(pct * 10) / 10, days: d };
+  }
+  function eta(avg, goal, pc, pl, date) {
+    if (!goal || avg <= goal) return null;
+    const useTrend = pc && pc.perWeek != null && pc.perWeek < -0.05;
+    let rate = useTrend ? -pc.perWeek : pl.weekly;
+    if (!rate || rate <= 0) return null;
+    rate = Math.min(rate, avg * 0.01);
+    const weeks = Math.ceil((avg - goal) / rate);
+    return { weeks, date: addDays(date, weeks * 7), basis: useTrend ? 'trend' : 'plan' };
+  }
+
+  // ---------- 体成分 ----------
+  const compRange = (sex) => (sex === 'm' ? { pbf: [10, 20], whr: [0.8, 0.9], visceral: [1, 9] } : { pbf: [18, 28], whr: [0.75, 0.85], visceral: [1, 9] });
+
+  /* 体重不动时用来区分“真平台期”和“减脂增肌同时发生”。只看最近 4 周内的新数据，并和至少两周前的记录比较。 */
+  function bodyImproving(days, items, date) {
+    const fresh = (d) => diff(date, d) <= 28;
+    const earlier = (list, last) => list.filter((x) => diff(last.date, x.date) >= 14).pop();
+    const waist = Object.keys(days).sort().filter((k) => days[k].measure && days[k].measure.waist != null).map((k) => ({ date: k, v: days[k].measure.waist }));
+    const w = waist[waist.length - 1];
+    if (w && fresh(w.date)) {
+      const before = earlier(waist, w);
+      if (before && w.v <= before.v - 1) return true;
+    }
+    const list = (items || []).slice().sort((a, b) => (a.date < b.date ? -1 : 1));
+    const c = list[list.length - 1];
+    if (c && fresh(c.date)) {
+      const before = earlier(list, c);
+      if (before && (c.pbf <= before.pbf - 0.5 || c.fat <= before.fat - 0.5)) return true;
+    }
+    return false;
+  }
+
+  /* 约 12 周后的合理目标。已经在正常范围的指标不再给下降目标。 */
+  function compNext(r, sex) {
+    const rg = compRange(sex);
+    const out = { date: addDays(r.date, 84), smm: round1(r.smm + 0.5) };
+    if (r.pbf > rg.pbf[1]) out.pbf = [Math.max(rg.pbf[1], Math.round(r.pbf - 3.5)), Math.max(rg.pbf[1], Math.round(r.pbf - 2.5))];
+    if (r.visceral > rg.visceral[1]) out.visceral = [Math.max(rg.visceral[1], r.visceral - 2), Math.max(rg.visceral[1], r.visceral - 1)];
+    return out;
+  }
+
+  // ---------- 今日七件事 ----------
+  function foodTotals(d) {
+    const t = { kcal: 0, p: 0, c: 0, f: 0, n: 0 };
+    ((d && d.meals) || []).forEach((m) => { t.kcal += m.kcal || 0; t.p += m.p || 0; t.c += m.c || 0; t.f += m.f || 0; t.n++; });
+    return t;
+  }
+  function foodStatus(d, pl, p) {
+    if (p.foodMode === 'palm' || !pl.showNumbers) return (d.palm || 0) >= 3;
+    const t = foodTotals(d);
+    return t.n >= 2 && t.p >= pl.protein * 0.85 && t.kcal <= pl.kcal + 100 && t.kcal >= pl.kcal * 0.75;
+  }
+  function things(d, pl, p) {
+    const t = d.t || {};
+    const auto = {
+      sleep: d.sleep != null && d.sleep >= pl.sleep,
+      water: (d.water || 0) >= pl.water,
+      food: foodStatus(d, pl, p),
+      move: !!(d.workout && d.workout.doneAt) || (d.steps || 0) >= pl.steps || (d.cardio || 0) >= 30,
+    };
+    return QS.THING_KEYS.map((k) => ({ k, done: t[k] === undefined ? !!auto[k] : !!t[k], auto: !!auto[k] }));
+  }
+
+  // ---------- 训练 ----------
+  function program(p, date) {
+    const level = p.level || 'new';
+    const keys = QS.PROGRAMS[p.trainDays || 3] || QS.PROGRAMS[3];
+    const wk = p.startDate ? Math.floor(diff(date || today(), p.startDate) / 7) : 99;
+    return keys.map((key) => {
+      const s = QS.SESS[key];
+      return {
+        key, name: s.name, focus: s.focus, note: s.note,
+        items: s.items.map(([ex, sets, lo, hi]) => ({ ex, lo, hi, sets: level === 'new' && wk < 2 ? Math.min(sets, 2) : level === 'pro' && sets === 3 ? 4 : sets })),
+      };
+    });
+  }
+  function nextSession(pgm, days, date) {
+    const cur = days[date] && days[date].workout;
+    if (cur) { const i = pgm.findIndex((s) => s.key === cur.key); if (i >= 0) return i; }
+    const dates = Object.keys(days).filter((k) => k < date).sort().reverse();
+    for (const k of dates) {
+      const w = days[k].workout;
+      if (w && w.doneAt) { const i = pgm.findIndex((s) => s.key === w.key); if (i >= 0) return (i + 1) % pgm.length; }
+    }
+    return 0;
+  }
+  function weekWorkouts(days, date) {
+    const st = weekStart(date);
+    let n = 0;
+    for (let i = 0; i < 7; i++) { const d = days[addDays(st, i)]; if (d && d.workout && d.workout.doneAt) n++; }
+    return n;
+  }
+  function lastPerf(days, ex, venue, before) {
+    const dates = Object.keys(days).filter((k) => k < before).sort().reverse();
+    for (const k of dates) {
+      const w = days[k].workout;
+      if (w && w.venue === venue && w.sets && w.sets[ex]) {
+        const ok = w.sets[ex].filter((s) => s.ok);
+        if (ok.length) return { date: k, sets: ok };
+      }
+    }
+    return null;
+  }
+  function progressHint(last, lo, hi) {
+    if (!last) return null;
+    const min = Math.min(...last.sets.map((s) => s.reps || 0));
+    if (min >= hi) return { up: true, t: '上次每组都到上限了，这次可以加一点重量（约 5%）。' };
+    if (min < lo) return { up: false, t: '上次有组没做够，这次保持重量，先把次数做满。' };
+    return { up: false, t: '保持重量，争取每组多做 1 次。' };
+  }
+
+  // ---------- 医美恢复和到期 ----------
+  function medInfo(r) {
+    const c = (QS.MED || []).find((m) => m.id === r.pid);
+    return c || { id: 'custom', n: r.name || '自定义项目', phases: [3, 7], pause: 7, care: [], interval: 0, cat: '其他' };
+  }
+  function recovery(items, date) {
+    const act = (items || [])
+      .map((r) => { const c = medInfo(r); return { r, c, day: diff(date, r.date) }; })
+      .filter((x) => x.day >= 0 && x.day <= 14)
+      .map((x) => {
+        const [a, b] = x.c.phases;
+        const pause = x.day < x.c.pause;
+        return { ...x, phase: x.day <= a ? '急性期' : x.day <= b ? '恢复期' : '稳定期', pause, resume: addDays(x.r.date, x.c.pause) };
+      })
+      .sort((a, b) => Number(b.pause) - Number(a.pause) || a.day - b.day);
+    return act.length ? act[0] : null;
+  }
+  function dues(items, date) {
+    const latest = {};
+    (items || []).forEach((r) => { const k = r.pid === 'custom' ? 'c:' + r.name : r.pid; if (!latest[k] || latest[k].date < r.date) latest[k] = r; });
+    return Object.values(latest).filter((r) => r.next).map((r) => ({ r, c: medInfo(r), left: diff(r.next, date) })).sort((a, b) => a.left - b.left);
+  }
+
+  // ---------- 护肤 ----------
+  const NIGHTS = {
+    rep: { k: 'rep', n: '修护夜', step: '不用活性，涂足保湿修护（神经酰胺、泛醇）', tip: '修护夜让皮肤缓过来，活性才用得下去。' },
+    bha: { k: 'bha', n: '水杨酸夜', step: '水杨酸 0.5–2%：T 区和爱长痘的地方薄涂', tip: '刺痛发红就跳过这一次。' },
+    aha: { k: 'aha', n: '果酸夜', step: '杏仁酸或乳酸：全脸薄涂，避开眼周', tip: '刺痛发红就跳过这一次。' },
+    aza: { k: 'aza', n: '壬二酸夜', step: '壬二酸 10–15%：全脸薄涂', tip: '对痘痘和痘印都有帮助，相对温和。' },
+    ret: { k: 'ret', n: 'A 醇夜', step: 'A 醇 0.1–0.3%：黄豆大小，避开眼周和嘴角', tip: '干燥脱皮就先涂保湿再涂 A 醇。第二天务必防晒。' },
+  };
+  function barrierAlert(days, date) {
+    let n = 0;
+    for (let i = 0; i < 3; i++) { const d = days[addDays(date, -i)]; if (d && d.skin && d.skin.red >= 2) n++; }
+    return n >= 2;
+  }
+  function skinPlan(p, date, opts) {
+    const o = opts || {};
+    const start = p.skinStart || p.startDate || date;
+    const elapsed = Math.max(0, diff(date, start));
+    const type = p.skinType || 'combo';
+    const sens = type === 'sensitive';
+    const preg = !!(p.safety && p.safety.preg);
+    const con = p.concerns || [];
+    const mult = sens ? 1.5 : 1;
+    const stage = p.skinUsed === 'yes' ? 3 : elapsed < 14 * mult ? 1 : elapsed < 42 * mult ? 2 : 3;
+
+    const acid = sens || preg ? 'aza' : con.includes('acne') ? 'bha' : con.includes('tone') ? 'aha' : 'aza';
+    const useRet = !preg && (con.includes('aging') || con.includes('acne') || con.includes('tone'));
+    const first = con.includes('acne') || con.includes('tone') || !useRet ? acid : 'ret';
+    let keys;
+    if (stage === 1) keys = ['rep', 'rep', 'rep', 'rep'];
+    else if (stage === 2) keys = [first, 'rep', 'rep', 'rep'];
+    else keys = useRet ? [acid, 'ret', 'rep', 'rep'] : [acid, 'rep', 'rep', 'rep'];
+
+    let mode = 'normal', reason = null;
+    if (o.recovery && o.recovery.pause) {
+      mode = 'recovery';
+      reason = `${o.recovery.c.n} 术后第 ${o.recovery.day} 天，A 醇和酸类暂停到 ${fmtShort(o.recovery.resume)}。`;
+    } else if (o.barrier) {
+      mode = 'barrier';
+      reason = '最近泛红刺痛偏高，今晚先用修护方案，缓过来再恢复活性。';
+    }
+
+    const idx = elapsed % 4;
+    const nightKey = mode === 'normal' ? keys[idx] : 'rep';
+    const night = NIGHTS[nightKey];
+    const oily = type === 'oily' || type === 'combo';
+    const cleanse = oily ? '温和氨基酸洁面' : '清水或极温和洁面';
+    const moist = { oily: '清爽乳液或凝胶', combo: '乳液，两颊可以多涂一点', dry: '面霜', sensitive: '成分简单的修护霜' }[type];
+
+    let amActive = null;
+    if (mode === 'normal') {
+      if (stage === 1) { if (!sens && (oily || con.includes('acne'))) amActive = { t: '烟酰胺', d: '2–5%，控油和提亮' }; }
+      else if (sens) amActive = { t: '烟酰胺或传明酸', d: '低浓度起步，提亮肤色' };
+      else if (con.includes('tone') || con.includes('aging')) amActive = { t: 'VC 精华', d: '抗氧化和提亮，刺痛就换 VC 衍生物' };
+      else if (con.includes('acne')) amActive = { t: '烟酰胺', d: '2–5%，控油和提亮' };
+    }
+    const am = [{ t: '洁面', d: mode === 'normal' ? cleanse : '清水或极温和洁面' }];
+    if (amActive) am.push(amActive);
+    am.push({ t: '保湿', d: mode === 'normal' ? moist : '修护霜或医用敷料后的保湿' });
+    am.push({ t: '防晒', d: 'SPF50 PA++++，全脸约两指长，出门前 15 分钟涂' });
+
+    const pm = [{ t: '清洁', d: '卸防晒后温和洁面' }];
+    if (nightKey !== 'rep') pm.push({ t: night.n.replace('夜', ''), d: night.step });
+    pm.push({ t: nightKey === 'rep' ? '修护' : '保湿', d: nightKey === 'rep' ? night.step : moist });
+
+    const stageName = { 1: '打底期', 2: '加一种', 3: '完整轮换' }[stage];
+    const stageNote = {
+      1: '先把洁面、保湿、防晒做稳，让皮肤适应。这段时间不加酸和 A 醇。',
+      2: '每 4 晚用一次活性，其余 3 晚修护。只加一种新成分，观察 2 周再加下一种。',
+      3: '4 晚一轮：两晚活性，两晚修护。如果泛红刺痛，退回上一阶段。',
+    }[stage];
+    return { stage, stageName, stageNote, keys, cycle: keys.map((k) => NIGHTS[k]), idx, night, am, pm, mode, reason, elapsed };
+  }
+
+  /* 只比较有足够样本的组合，并在界面上标明“相关不等于因果”。 */
+  function triggers(days) {
+    const cond = {
+      salt: (d) => !!(d.flags && d.flags.salt), alcohol: (d) => !!(d.flags && d.flags.alcohol),
+      sugar: (d) => !!(d.flags && d.flags.sugar), snack: (d) => !!(d.flags && d.flags.snack),
+      lowSleep: (d) => d.sleep != null && d.sleep < 6, period: (d) => !!d.period,
+    };
+    const pairs = [['salt', '高盐重口', 'puffy', '水肿'], ['alcohol', '喝酒', 'puffy', '水肿'], ['snack', '吃夜宵', 'puffy', '水肿'], ['lowSleep', '睡不到 6 小时', 'puffy', '水肿'], ['sugar', '奶茶甜食', 'acne', '长痘'], ['lowSleep', '睡不到 6 小时', 'acne', '长痘'], ['alcohol', '喝酒', 'acne', '长痘'], ['period', '经期', 'acne', '长痘']];
+    const out = [];
+    for (const [c, cn, m, mn] of pairs) {
+      const yes = [], no = [];
+      for (const k of Object.keys(days)) {
+        const nx = days[addDays(k, 1)];
+        if (!nx || !nx.skin || nx.skin[m] == null) continue;
+        (cond[c](days[k]) ? yes : no).push(nx.skin[m]);
+      }
+      if (yes.length >= 4 && no.length >= 4) {
+        const avg = (a) => a.reduce((s, v) => s + v, 0) / a.length;
+        const d = avg(yes) - avg(no);
+        if (d >= 0.4) out.push({ cause: cn, metric: mn, delta: round1(d), n: yes.length });
+      }
+    }
+    return out.sort((a, b) => b.delta - a.delta).slice(0, 3);
+  }
+
+  // ---------- 周复盘 ----------
+  function weekSummary(days, start, pl, p) {
+    const dates = Array.from({ length: 7 }, (_, i) => addDays(start, i));
+    const counts = {}; QS.THING_KEYS.forEach((k) => (counts[k] = 0));
+    let blooms = 0, logged = 0, workouts = 0, cardio = 0, proteinHit = 0;
+    const avgOf = (vals) => (vals.length ? vals.reduce((s, v) => s + v, 0) / vals.length : null);
+    const sleep = [], water = [], steps = [], kcal = [], skin = [];
+    dates.forEach((k) => {
+      const d = days[k];
+      if (!d) return;
+      logged++;
+      const th = things(d, pl, p);
+      th.forEach((x) => { if (x.done) counts[x.k]++; });
+      if (th.filter((x) => x.done).length >= 5) blooms++;
+      if (d.sleep != null) sleep.push(d.sleep);
+      if (d.water) water.push(d.water);
+      if (d.steps) steps.push(d.steps);
+      if (d.workout && d.workout.doneAt) workouts++;
+      cardio += d.cardio || 0;
+      const t = foodTotals(d);
+      if (t.n >= 2) { kcal.push(t.kcal); if (t.p >= pl.protein * 0.85) proteinHit++; }
+      if (d.skin) skin.push(((d.skin.acne || 0) + (d.skin.oil || 0) + (d.skin.red || 0) + (d.skin.puffy || 0)) / 4);
+    });
+    const series = weightSeries(days);
+    const at = (dt) => { let v = null; for (const s of series) if (s.date <= dt) v = s.avg; return v; };
+    const wEnd = at(dates[6]), wPrev = at(addDays(start, -1));
+    return {
+      start, end: dates[6], logged, blooms, counts, workouts, cardio, proteinHit,
+      sleep: avgOf(sleep), water: avgOf(water), steps: avgOf(steps), kcal: avgOf(kcal), skin: avgOf(skin),
+      weight: wEnd, weightDelta: wEnd != null && wPrev != null ? Math.round((wEnd - wPrev) * 10) / 10 : null,
+    };
+  }
+
+  QS.E = { ymd, parse, today, addDays, diff, weekStart, fmtDate, fmtShort, round1, clamp, solarTerm, bmi, bmiBand, waistBand, plan, weightSeries, latestWeight, pace, eta, compRange, bodyImproving, compNext, foodTotals, things, program, nextSession, weekWorkouts, lastPerf, progressHint, medInfo, recovery, dues, barrierAlert, skinPlan, triggers, weekSummary, NIGHTS };
+})(typeof globalThis !== 'undefined' ? globalThis : window);
+
+</script>
+<script>
+/* 气色簿 · 数据保存、照片和 Claude 调用。
+ * 登录后写入每个人私有的 data/users/<id> 目录，别人（包括分享链接的人）读不到；
+ * 打不开数据库时退回到这个浏览器的本地存储，并在页面上说明。 */
+(function (g) {
+  const QS = g.QS;
+
+  const state = {
+    ready: false, mode: 'pending', stale: false, loadFailed: false,
+    profile: null, days: {}, med: { items: [], wishes: [] }, photos: { items: [] }, reviews: { weeks: {} }, foods: { items: [] }, comp: { items: [] },
+    caps: { ai: false, images: false, photos: false, file: false },
+    toasts: [], sheet: null,
+  };
+
+  const listeners = new Set();
+  const subscribe = (fn) => { listeners.add(fn); return () => listeners.delete(fn); };
+  const emit = () => listeners.forEach((fn) => fn());
+
+  let db = null, uid = null, col = null, assets = null, downloads = null, sample = null;
+  const LS = 'qisebu.v1.';
+  const lsGet = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const lsSet = (k, v) => { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } };
+  const lsDel = (k) => { try { localStorage.removeItem(k); } catch (e) { /* 存储不可用时无需处理 */ } };
+  const lsKeys = () => { try { return Object.keys(localStorage).filter((k) => k.startsWith(LS)); } catch (e) { return []; } };
+
+  function assign(key, data) {
+    const v = JSON.parse(JSON.stringify(data));
+    delete v.k;
+    if (key.startsWith('d_')) state.days[key.slice(2)] = v;
+    else if (key === 'profile') state.profile = v;
+    else if (key === 'med') state.med = { items: v.items || [], wishes: v.wishes || [] };
+    else if (key === 'photos') state.photos = { items: v.items || [] };
+    else if (key === 'reviews') state.reviews = { weeks: v.weeks || {} };
+    else if (key === 'foods') state.foods = { items: v.items || [] };
+    else if (key === 'comp') state.comp = { items: v.items || [] };
+  }
+  function unassign(key) {
+    if (key.startsWith('d_')) delete state.days[key.slice(2)];
+    else if (key === 'profile') state.profile = null;
+    else if (key === 'med') state.med = { items: [], wishes: [] };
+    else if (key === 'photos') state.photos = { items: [] };
+    else if (key === 'reviews') state.reviews = { weeks: {} };
+    else if (key === 'foods') state.foods = { items: [] };
+    else if (key === 'comp') state.comp = { items: [] };
+  }
+
+  // ---------- 写入：同一文档一次只写一份，连续改动合并成一次 ----------
+  const pending = new Map(), timers = new Map(), inflight = new Set(), dirty = new Set(), retried = new Set();
+
+  function save(key, doc) {
+    pending.set(key, doc);
+    dirty.add(key);
+    clearTimeout(timers.get(key));
+    timers.set(key, setTimeout(() => flush(key), 450));
+  }
+  async function write(key, doc) {
+    if (state.mode === 'cloud') await col.doc(key).set(JSON.parse(JSON.stringify(doc))); // 去掉 undefined 字段
+    else if (!lsSet(LS + key, JSON.stringify(doc))) throw { code: 'local_full' };
+  }
+  async function flush(key) {
+    clearTimeout(timers.get(key));
+    if (inflight.has(key)) return;
+    const doc = pending.get(key);
+    if (!doc) { dirty.delete(key); return; }
+    pending.delete(key);
+    inflight.add(key);
+    try {
+      await write(key, doc);
+      retried.delete(key);
+    } catch (e) {
+      const code = e && e.code;
+      if (code === 'unavailable' && !retried.has(key)) {
+        retried.add(key);
+        if (!pending.has(key)) pending.set(key, doc);
+        inflight.delete(key);
+        setTimeout(() => flush(key), 700 + Math.random() * 900);
+        return;
+      }
+      retried.delete(key);
+      toast(code === 'quota_exceeded' ? '存储空间已满，这条没保存。可以在设置里导出后清理旧数据。' : code === 'local_full' ? '浏览器存储已满或被禁用，这条没保存。' : '这次没保存成功，请检查网络后再操作一次。', 'crit');
+    }
+    inflight.delete(key);
+    if (pending.has(key)) flush(key);
+    else dirty.delete(key);
+  }
+  const flushAll = () => Array.from(pending.keys()).forEach(flush);
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushAll(); });
+    addEventListener('pagehide', flushAll);
+  }
+
+  // ---------- 修改数据 ----------
+  const day = (date) => state.days[date] || { date };
+  function patchDay(date, patch) {
+    const next = { ...day(date), ...patch, date };
+    state.days[date] = next;
+    save('d_' + date, { k: 'day', ...next });
+    emit();
+  }
+  function setMeta(key, value) {
+    state[key] = value;
+    save(key, { k: 'meta', ...value });
+    emit();
+  }
+  const setProfile = (v) => setMeta('profile', v);
+  const setMed = (v) => setMeta('med', v);
+  const setPhotos = (v) => setMeta('photos', v);
+  const setReviews = (v) => setMeta('reviews', v);
+  const setFoods = (v) => setMeta('foods', v);
+  const setComp = (v) => setMeta('comp', v);
+
+  // ---------- 界面提示 ----------
+  let toastId = 0;
+  function toast(msg, tone) {
+    const id = ++toastId;
+    state.toasts = [...state.toasts, { id, msg, tone: tone || 'ok' }];
+    emit();
+    setTimeout(() => { state.toasts = state.toasts.filter((t) => t.id !== id); emit(); }, tone === 'crit' ? 5000 : 2400);
+  }
+  const openSheet = (title, render) => { state.sheet = { title, render }; emit(); };
+  const closeSheet = () => { state.sheet = null; emit(); };
+
+  // ---------- 启动 ----------
+  function apply(snap) {
+    snap.docs.forEach((d) => { if (!dirty.has(d.id) && d.exists) assign(d.id, d.data()); });
+    if (snap.docChanges) snap.docChanges().forEach((c) => { if (c.type === 'removed' && !dirty.has(c.doc.id)) unassign(c.doc.id); });
+  }
+  function startCloud() {
+    state.mode = 'cloud';
+    col = db.collection('data/users/' + uid);
+    let metaOk = false, dayOk = false, sure = false;
+    const guard = setTimeout(() => {
+      if (sure) return;
+      state.stale = true;
+      if (state.profile) { state.ready = true; } else { state.loadFailed = true; }
+      emit();
+    }, 10000);
+    const settle = () => {
+      if (metaOk && dayOk) {
+        sure = true; clearTimeout(guard);
+        state.ready = true; state.stale = false; state.loadFailed = false;
+      }
+      emit();
+    };
+    const fail = (e) => {
+      clearTimeout(guard);
+      if (e && e.code === 'revoked') toast('访问权限发生了变化，新的记录可能无法保存。', 'crit');
+      else toast('数据连接中断了，刷新页面可以重新连接。', 'crit');
+      if (!state.ready) { state.loadFailed = true; emit(); }
+    };
+    col.where('k', '==', 'meta').onSnapshot((snap) => {
+      apply(snap);
+      if (!snap.metadata.fromCache) metaOk = true;
+      settle();
+    }, fail);
+    col.where('k', '==', 'day').orderBy('date', 'desc').limit(800).onSnapshot((snap) => {
+      apply(snap);
+      if (!snap.metadata.fromCache) dayOk = true;
+      settle();
+    }, fail);
+  }
+  function startLocal() {
+    state.mode = 'local';
+    lsKeys().forEach((k) => {
+      try { assign(k.slice(LS.length), JSON.parse(lsGet(k))); } catch (e) { /* 跳过损坏的条目 */ }
+    });
+    state.ready = true;
+    emit();
+  }
+  async function init() {
+    const c = g.claude;
+    if (!c || !c.use) { startLocal(); return; }
+    const [d, u] = await Promise.all([c.use('db').catch(() => null), c.use('user').catch(() => null)]);
+    db = d;
+    uid = u ? await u.id() : null;
+    if (db && uid) startCloud(); else startLocal();
+    c.use('sample').then(async (s) => {
+      if (!s) return;
+      sample = s; state.caps.ai = true;
+      const lim = await s.limits().catch(() => null);
+      state.caps.images = !!(lim && lim.images);
+      emit();
+    }).catch(() => {});
+    c.use('assets').then((a) => { if (a && state.mode === 'cloud') { assets = a; state.caps.photos = true; emit(); } }).catch(() => {});
+    c.use('downloads').then((x) => { if (x) { downloads = x; state.caps.file = true; emit(); } }).catch(() => {});
+  }
+
+  // ---------- 照片 ----------
+  async function compressImage(file, max) {
+    const url = URL.createObjectURL(file);
+    try {
+      const img = new Image();
+      // 不用 img.decode()：页面暂时不在屏幕上时它可能一直不返回
+      await new Promise((res, rej) => { img.onload = res; img.onerror = () => rej(new Error('decode')); img.src = url; });
+      const scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.naturalWidth * scale);
+      c.height = Math.round(img.naturalHeight * scale);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      return await new Promise((res, rej) => c.toBlob((b) => (b ? res(b) : rej(new Error('encode'))), 'image/jpeg', 0.85));
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+  async function uploadPhoto(file, meta) {
+    const blob = await compressImage(file, 1400);
+    const r = await assets.upload(blob, { type: 'image/jpeg' });
+    setPhotos({ items: [...state.photos.items, { id: r.id, ...meta }] });
+  }
+  async function deletePhoto(id) {
+    try { await assets.delete(id); } catch (e) { /* 文件已不在时，仍然移除记录 */ }
+    setPhotos({ items: state.photos.items.filter((x) => x.id !== id) });
+  }
+  const photoUrl = (id) => '/_blob/' + id;
+
+  // ---------- 导出和清空 ----------
+  function snapshotAll() {
+    const { profile, days, med, photos, reviews, foods, comp } = state;
+    return JSON.stringify({ app: 'qisebu', exportedAt: new Date().toISOString(), profile, days, med, photos, reviews, foods, comp }, null, 2);
+  }
+  async function exportAll() {
+    const data = snapshotAll();
+    const filename = `qisebu-${QS.E.today()}.json`;
+    if (g.QS_OFFLINE) {
+      // 离线版是普通网页，可以直接存成文件
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      toast('备份文件已导出');
+      return;
+    }
+    if (downloads) {
+      try { await downloads.save({ filename, data }); toast('已导出'); return; }
+      catch (e) { if (e && e.code === 'declined') return; }
+    }
+    try { await navigator.clipboard.writeText(data); toast('数据已复制到剪贴板'); }
+    catch (e) { toast('这个环境不能导出文件或复制，请换浏览器打开再试。', 'crit'); }
+  }
+  async function clearAll() {
+    const keys = ['profile', 'med', 'photos', 'reviews', 'foods', 'comp', ...Object.keys(state.days).map((d) => 'd_' + d)];
+    const photoIds = state.photos.items.map((x) => x.id);
+    keys.forEach((k) => { pending.delete(k); clearTimeout(timers.get(k)); dirty.add(k); });
+    try {
+      for (const k of keys) {
+        if (state.mode === 'cloud') await col.doc(k).delete();
+        else lsDel(LS + k);
+      }
+      if (assets) for (const id of photoIds) await assets.delete(id).catch(() => {});
+    } finally {
+      keys.forEach((k) => { dirty.delete(k); unassign(k); });
+      state.days = {};
+      emit();
+    }
+  }
+
+  // ---------- 从备份恢复：只在本地模式用，不会碰账号里的记录 ----------
+  const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
+  const list = (v) => (Array.isArray(v) ? v : []);
+  function readBackup(text) {
+    let b = null;
+    try { b = JSON.parse(text); } catch (e) { /* 下面统一提示 */ }
+    if (!isObj(b) || b.app !== 'qisebu' || !isObj(b.profile)) return { err: '这不是气色簿导出的备份文件。' };
+    const days = isObj(b.days) ? b.days : {};
+    const dates = Object.keys(days).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d) && isObj(days[d])).sort();
+    const docs = [
+      ['profile', b.profile],
+      ['med', { items: list(b.med && b.med.items), wishes: list(b.med && b.med.wishes) }],
+      ['reviews', { weeks: isObj(b.reviews && b.reviews.weeks) ? b.reviews.weeks : {} }],
+      ['foods', { items: list(b.foods && b.foods.items) }],
+      ['comp', { items: list(b.comp && b.comp.items) }],
+    ].map(([k, v]) => [k, { k: 'meta', ...v }]);
+    dates.forEach((d) => docs.push(['d_' + d, { k: 'day', ...days[d], date: d }]));
+    return {
+      docs,
+      exportedAt: typeof b.exportedAt === 'string' ? b.exportedAt : '',
+      first: dates[0] || '', last: dates[dates.length - 1] || '',
+      counts: { days: dates.length, comp: list(b.comp && b.comp.items).length, med: list(b.med && b.med.items).length, photos: list(b.photos && b.photos.items).length },
+    };
+  }
+  // 对比照存在账号的文件库里，本地模式打不开，所以不恢复。写入失败时放回原来的记录。
+  function restoreBackup(r) {
+    if (state.mode !== 'local') return false;
+    timers.forEach((t) => clearTimeout(t));
+    timers.clear(); pending.clear(); dirty.clear();
+    const old = lsKeys().map((k) => [k, lsGet(k)]);
+    old.forEach(([k]) => lsDel(k));
+    if (!r.docs.every(([k, doc]) => lsSet(LS + k, JSON.stringify(doc)))) {
+      lsKeys().forEach(lsDel);
+      old.forEach(([k, v]) => lsSet(k, v));
+      return false;
+    }
+    ['profile', 'med', 'photos', 'reviews', 'foods', 'comp'].forEach(unassign);
+    state.days = {};
+    r.docs.forEach(([k, doc]) => assign(k, doc));
+    emit();
+    return true;
+  }
+
+  // ---------- Claude ----------
+  const RULES = `你是“气色簿”里的健康与形象教练，用中文回答。必须遵守：
+1. 只根据给出的数据说话，数据不足就直接说不足。
+2. 不建议低于基础代谢的热量，不建议每周减重超过当前体重的 1%，不推荐极端节食、断食挑战、泻药或减肥药。BMI 低于 18.5 时不建议减重。
+3. 不评价长相，不制造容貌焦虑。建议要具体到下周能做的动作和数字。
+4. 涉及疾病、用药、痘痘持续加重或术后异常时，建议去正规医院皮肤科或找原治疗医生。医美问题只提供一般信息，提醒核对机构资质、医生资质和产品批文。
+5. 如果对方流露出厌食、催吐或强烈的自我厌恶，先关心情绪，建议联系专业人士或信任的人，不给任何减重建议。`;
+
+  const AI = {
+    errorText(e) {
+      const c = e && e.code;
+      if (c === 'not_granted' || c === 'sampling_disabled' || c === 'not_declared') return '这个页面还没有获得使用 Claude 的许可。';
+      if (c === 'rate_limited') return '用得太频繁或额度到了，过一会儿再试。';
+      if (c === 'session_expired') return '登录已过期，请重新登录 claude.ai 后再试。';
+      if (c === 'refused') return 'Claude 没有回答这个问题，换个说法试试。';
+      if (c === 'invalid_json') return '这次没估算出来，再试一次，或者手动填写。';
+      if (c === 'image_rejected') return '这张照片读不了，换一张试试。';
+      return '连接出了点问题，可以再试一次。';
+    },
+    async estimateMeal(text, image) {
+      const prompt = `你是营养估算助手。根据${image ? '照片和' : ''}下面的描述，估算这一餐每种食物的份量、热量和宏量营养素，按中国常见家常或餐馆份量估计，描述模糊时按中等份量。
+只回复一个 JSON 对象，例如：{"items":[{"name":"牛肉面","amount":"一大碗约 500g","kcal":550,"protein":25,"carb":75,"fat":15}],"note":"一句话说明这次估算最不确定的地方"}
+kcal 和克数都用整数。描述：${text || '（见照片）'}`;
+      const opts = { modelTier: image ? 'default' : 'quick', cache: false };
+      if (image) {
+        try { opts.images = [await compressImage(image, 1280)]; }
+        catch (e) { throw { code: 'image_rejected' }; }
+      }
+      const r = await sample.json(prompt, opts);
+      const items = (r && Array.isArray(r.items) ? r.items : []).map((x) => ({
+        name: String(x.name || '未命名'), amount: String(x.amount || ''),
+        kcal: Math.max(0, Math.round(+x.kcal || 0)), p: Math.max(0, Math.round(+x.protein || 0)),
+        c: Math.max(0, Math.round(+x.carb || 0)), f: Math.max(0, Math.round(+x.fat || 0)),
+      }));
+      if (!items.length) throw { code: 'invalid_json' };
+      return { items, note: r.note ? String(r.note) : '' };
+    },
+    weekly(data, onText, signal) {
+      const prompt = `${RULES}\n\n请根据这一周的数据写复盘，总字数不超过 220 字。严格按三段写，每段开头用这几个小标题，单独成行：\n做得好的\n最该调整的\n下周只盯这一件事\n“最该调整的”最多两条，要具体到动作和数字。不要用 Markdown 符号。\n\n数据：${JSON.stringify(data)}`;
+      return sample(prompt, { cache: false, onText, signal });
+    },
+    chat(turns, context, onText, signal) {
+      const lead = { role: 'user', content: `${RULES}\n回答简短，一般不超过 200 字，不要用 Markdown 符号。\n\n这是对方最近的数据，只在相关时引用：${context}` };
+      return sample([lead, ...turns.slice(-12)], { cache: false, onText, signal });
+    },
+  };
+
+  QS.AI = AI;
+  QS.Store = { state, subscribe, emit, day, patchDay, setProfile, setMed, setPhotos, setReviews, setFoods, setComp, toast, openSheet, closeSheet, init, uploadPhoto, deletePhoto, photoUrl, exportAll, clearAll, readBackup, restoreBackup };
+})(typeof globalThis !== 'undefined' ? globalThis : window);
+
+</script>
+<script>
+/* 气色簿 · 共用组件和跨页面的小工具。 */
+const { html, render, useState, useEffect, useRef } = htmPreact;
+const E = QS.E, S = QS.Store, AI = QS.AI;
+const UI = { date: E.today(), followToday: true, rest: null };
+
+const n0 = (v) => (v == null ? '—' : Math.round(v).toLocaleString('zh-CN'));
+const n1 = (v) => (v == null ? '—' : (Math.round(v * 10) / 10).toFixed(1));
+const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+function shiftDate(n) {
+  const nd = E.addDays(UI.date, n);
+  if (nd > E.today()) return;
+  UI.date = nd;
+  UI.followToday = nd === E.today();
+  S.emit();
+}
+function goToday() { UI.date = E.today(); UI.followToday = true; S.emit(); }
+
+const ic = (d, s) => html`<svg width=${s || 18} height=${s || 18} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d=${d}/></svg>`;
+const Icon = {
+  left: () => ic('M15 5l-7 7 7 7'),
+  right: () => ic('M9 5l7 7-7 7'),
+  close: () => ic('M6 6l12 12M18 6L6 18'),
+  check: () => ic('M5 12.5l4.5 4.5L19 7.5'),
+  plus: () => ic('M12 5v14M5 12h14'),
+  sliders: () => ic('M4 7h9m4 0h3M4 17h3m4 0h9M15 5v4M9 15v4', 20),
+  camera: () => ic('M4 8h3l2-3h6l2 3h3v11H4zM12 11a3 3 0 1 0 0 6a3 3 0 0 0 0-6'),
+};
+
+const PETAL_BIG = 'M0 -21C14 -26 17 -41 0 -49C-17 -41 -14 -26 0 -21Z';
+const PETAL_SMALL = 'M0 -6C15 -13 18 -37 0 -47C-18 -37 -15 -13 0 -6Z';
+function Flower({ states, size, small }) {
+  const P = small ? PETAL_SMALL : PETAL_BIG;
+  return html`<svg viewBox="0 0 100 100" width=${size} height=${size} aria-hidden="true"><g transform="translate(50 50)">${states.map((on, i) => html`<path class=${'petal' + (on ? ' on' : '')} d=${P} transform=${`rotate(${(360 / 7) * i})`}/>`)}</g></svg>`;
+}
+function Tick({ on, label, onClick }) {
+  return html`<button type="button" class=${'tick' + (on ? ' on' : '')} aria-pressed=${on ? 'true' : 'false'} aria-label=${label} onClick=${onClick}>
+    <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true"><path d="M20 3C32 9 35 25 20 37C5 25 8 9 20 3Z"/>${on ? html`<polyline points="14,20 18.5,24.5 26.5,15.5" fill="none" stroke="var(--on-rouge)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>` : null}</svg>
+  </button>`;
+}
+
+function Sec({ title, note, right, children, first, cls }) {
+  return html`<section class=${'sec' + (first ? ' first' : '') + (cls ? ' ' + cls : '')}>
+    ${title || right ? html`<div class="sec-h">${title ? html`<h2>${title}</h2>` : html`<span></span>`}${right || null}</div>` : null}
+    ${note ? html`<p class="note">${note}</p>` : null}
+    ${children}
+  </section>`;
+}
+function Seg({ value, onChange, options, label }) {
+  return html`<div class="seg" role="radiogroup" aria-label=${label}>${options.map((o) => html`<button type="button" role="radio" aria-checked=${value === o.v ? 'true' : 'false'} class=${value === o.v ? 'on' : ''} onClick=${() => onChange(o.v)}>${o.l}</button>`)}</div>`;
+}
+function Chips({ value, onToggle, options }) {
+  return html`<div class="chips">${options.map((o) => html`<button type="button" class=${'chip' + (value.includes(o.v) ? ' on' : '')} aria-pressed=${value.includes(o.v) ? 'true' : 'false'} onClick=${() => onToggle(o.v)}>${o.l}</button>`)}</div>`;
+}
+function Pill({ s, children }) { return html`<span class=${'pill ' + s}>${children}</span>`; }
+
+/* 输入时只改本地文字，离开输入框或按回车时才保存。 */
+function Num({ id, value, onCommit, unit, placeholder, label, min, max, width }) {
+  const show = value == null ? '' : String(value);
+  const [text, setText] = useState(show);
+  useEffect(() => { setText(show); }, [show]);
+  const commit = () => {
+    const t = text.trim();
+    if (t === '') { if (value != null) onCommit(null); return; }
+    const n = parseFloat(t);
+    if (!isFinite(n) || (min != null && n < min) || (max != null && n > max)) {
+      S.toast(`请填 ${min} 到 ${max} 之间的数字`, 'crit');
+      setText(show);
+      return;
+    }
+    if (n !== value) onCommit(n);
+  };
+  return html`<span class="num-box"><input id=${id} type="text" inputmode="decimal" autocomplete="off" aria-label=${label} placeholder=${placeholder || ''} value=${text} onInput=${(e) => setText(e.target.value)} onBlur=${commit} onKeyDown=${(e) => { if (e.key === 'Enter') e.target.blur(); }} style=${width ? `width:${width}px` : ''}/>${unit ? html`<em>${unit}</em>` : null}</span>`;
+}
+function Field({ id, label, value, onInput, placeholder, type, inputmode }) {
+  return html`<label class="field"><span>${label}</span><input id=${id} type=${type || 'text'} inputmode=${inputmode} autocomplete="off" placeholder=${placeholder || ''} value=${value} onInput=${(e) => onInput(e.target.value)}/></label>`;
+}
+function Area({ id, label, value, onInput, placeholder }) {
+  return html`<label class="field"><span>${label}</span><textarea id=${id} placeholder=${placeholder || ''} value=${value} onInput=${(e) => onInput(e.target.value)}></textarea></label>`;
+}
+function Select({ id, label, value, onChange, children }) {
+  return html`<label class="field"><span>${label}</span><select id=${id} value=${value} onChange=${(e) => onChange(e.target.value)}>${children}</select></label>`;
+}
+/* 平台不显示 confirm 弹窗，危险操作用“再点一次”确认。 */
+function Confirm({ label, sure, onYes, cls }) {
+  const [arm, setArm] = useState(false);
+  useEffect(() => { if (!arm) return undefined; const t = setTimeout(() => setArm(false), 4000); return () => clearTimeout(t); }, [arm]);
+  return html`<button type="button" class=${cls || 'link'} onClick=${() => { if (arm) { setArm(false); onYes(); } else setArm(true); }}>${arm ? sure || '确定吗？再点一次' : label}</button>`;
+}
+function Meter({ pct, over }) {
+  return html`<div class=${'meter' + (over ? ' over' : '')}><i style=${`width:${E.clamp(pct, 0, 100)}%`}></i></div>`;
+}
+function Notice({ s, title, children, href }) {
+  const body = html`${title ? html`<b>${title}</b>` : null}${children ? html`<span>${children}</span>` : null}`;
+  return href ? html`<a class=${'notice ' + (s || '')} href=${href}>${body}</a>` : html`<div class=${'notice ' + (s || '')}>${body}</div>`;
+}
+
+function useWidth() {
+  const ref = useRef(null);
+  const [w, setW] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const set = () => setW(el.clientWidth);
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return [ref, w];
+}
+function niceTicks(min, max, n) {
+  const span = max - min || 1;
+  const raw = span / n;
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const norm = raw / mag;
+  const step = (norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 5 ? 5 : 10) * mag;
+  const lo = Math.floor(min / step) * step;
+  const hi = Math.ceil(max / step) * step;
+  const out = [];
+  for (let v = lo; v <= hi + step / 1000; v += step) out.push(Math.round(v * 100) / 100);
+  return out;
+}
+
+/* 当前日期需要的全部推导结果，各页面共用。 */
+function ctxOf(date) {
+  const st = S.state, p = st.profile;
+  const weight = E.latestWeight(st.days, p.weight);
+  const plan = E.plan(p, weight, date);
+  const recovery = E.recovery(st.med.items, date);
+  const barrier = E.barrierAlert(st.days, date);
+  const skin = E.skinPlan(p, date, { recovery, barrier });
+  const pgm = E.program(p, date);
+  const nextIdx = E.nextSession(pgm, st.days, date);
+  return { plan, recovery, barrier, skin, pgm, nextIdx, next: pgm[nextIdx], weight };
+}
+
+function remindersFor(date, ctx) {
+  const st = S.state, out = [], pl = ctx.plan;
+  if (ctx.recovery) {
+    const r = ctx.recovery;
+    out.push({ s: 'warn', t: `${r.c.n} 术后第 ${r.day} 天 · ${r.phase}`, d: r.pause ? `A 醇和酸类暂停到 ${E.fmtShort(r.resume)}，护肤已切换成修护方案。` : '可以恢复日常护肤，防晒继续做足。', href: '#med' });
+  }
+  E.dues(st.med.items, date).filter((x) => x.left <= 14).slice(0, 2).forEach((x) => {
+    out.push({ s: 'info', t: x.left < 0 ? `${x.c.n} 已过建议复做时间 ${-x.left} 天` : x.left === 0 ? `${x.c.n} 今天到建议复做时间` : `${x.c.n} 还有 ${x.left} 天到建议复做时间`, d: '要不要做由你和医生决定，这里只是提醒。', href: '#med' });
+  });
+  if (pl.showNumbers) {
+    const pc = E.pace(E.weightSeries(st.days), pl);
+    if (pc.status === 'fast') out.push({ s: 'crit', t: '体重掉得偏快', d: `最近每周约 ${Math.abs(pc.perWeek).toFixed(1)} kg，超过体重的 1%。适当多吃一点，保住肌肉和气色。`, href: '#body' });
+    if (date === E.today()) {
+      const started = E.diff(date, st.profile.startDate || date);
+      const lastC = st.comp.items.map((x) => x.date).sort().pop();
+      if (lastC && E.diff(date, lastC) >= 84) out.push({ s: 'info', t: `上次体测是 ${E.diff(date, lastC)} 天前`, d: '可以复测了。同一台机器、相近时间测，结果才好比较。', href: '#body' });
+      const dates = Object.keys(st.days).sort();
+      const lastM = dates.filter((d) => st.days[d].measure).pop();
+      if (started >= 1 && (!lastM || E.diff(date, lastM) >= 14)) out.push({ s: 'info', t: lastM ? `上次量围度是 ${E.diff(date, lastM)} 天前` : '还没有量过围度', d: '腰围比体重更能反映减脂效果。', href: '#body' });
+      const lastP = st.photos.items.map((x) => x.date).sort().pop();
+      if (st.caps.photos && started >= 1 && (!lastP || E.diff(date, lastP) >= 28)) out.push({ s: 'info', t: lastP ? `上次拍对比照是 ${E.diff(date, lastP)} 天前` : '拍一组起始照片', d: '同样的光线和角度，以后对比才准。', href: '#body' });
+    }
+  }
+  return out.slice(0, 4);
+}
+
+/* 给 Claude 的数据摘要：只放分析需要的字段，不放昵称、机构和医生姓名。 */
+function aiContext() {
+  const st = S.state, p = st.profile, date = E.today(), ctx = ctxOf(date), pl = ctx.plan;
+  const rows = [];
+  for (let i = 13; i >= 0; i--) {
+    const k = E.addDays(date, -i), d = st.days[k];
+    if (!d) continue;
+    const t = E.foodTotals(d);
+    rows.push({ date: k, weight: pl.showNumbers ? d.weight : undefined, sleep: d.sleep, water: d.water, steps: d.steps, cardio: d.cardio, kcal: t.n && pl.showNumbers ? t.kcal : undefined, protein: t.n && pl.showNumbers ? t.p : undefined, workout: d.workout && d.workout.doneAt ? QS.SESS[d.workout.key].name : undefined, done: E.things(d, pl, p).filter((x) => x.done).length, skin: d.skin, flags: d.flags, period: d.period || undefined });
+  }
+  return JSON.stringify({
+    profile: { sex: p.sex, age: parseInt(date, 10) - p.birthYear, height: p.height, goals: p.goals, concerns: p.concerns, skinType: p.skinType, trainDays: p.trainDays, level: p.level, safety: p.safety },
+    plan: { phase: pl.modeName, kcal: pl.showNumbers ? pl.kcal : undefined, protein: pl.showNumbers ? pl.protein : undefined, goalWeight: pl.showNumbers ? pl.goal : undefined, bmi: pl.showNumbers ? Math.round(pl.bmi * 10) / 10 : undefined },
+    pace: pl.showNumbers ? E.pace(E.weightSeries(st.days), pl, E.bodyImproving(st.days, st.comp.items, date)) : undefined,
+    composition: pl.showNumbers ? st.comp.items.slice(-2).map((x) => ({ date: x.date, weight: x.weight, bodyFatPct: x.pbf, fatKg: x.fat, skeletalMuscleKg: x.smm, visceralLevel: x.visceral, waistHip: x.whr, segmentalLeanPct: x.lean })) : undefined,
+    skinStage: ctx.skin.stageName,
+    recovery: ctx.recovery ? { project: ctx.recovery.c.n, day: ctx.recovery.day, phase: ctx.recovery.phase } : undefined,
+    aesthetics: st.med.items.slice(-5).map((x) => ({ project: E.medInfo(x).n, date: x.date })),
+    days: rows,
+  });
+}
+
+</script>
+<script>
+/* 气色簿 · 今日、饮食、训练。 */
+
+function DateBar() {
+  const date = UI.date, isToday = date === E.today();
+  return html`<div class="row between">
+    <div class="row" style="gap:2px">
+      <button type="button" class="icon-btn" aria-label="前一天" onClick=${() => shiftDate(-1)}>${Icon.left()}</button>
+      <strong class="tn">${E.fmtDate(date)}</strong>
+      <button type="button" class="icon-btn" aria-label="后一天" disabled=${isToday} onClick=${() => shiftDate(1)}>${Icon.right()}</button>
+    </div>
+    ${isToday ? null : html`<button type="button" class="link" onClick=${goToday}>回到今天</button>`}
+  </div>`;
+}
+
+function Today() {
+  const date = UI.date, isToday = date === E.today();
+  const st = S.state, p = st.profile, d = S.day(date), ctx = ctxOf(date), pl = ctx.plan;
+  const th = E.things(d, pl, p);
+  const done = th.filter((x) => x.done).length;
+  const left = th.filter((x) => !x.done).map((x) => QS.THINGS[x.k].n);
+  const term = E.solarTerm(date);
+  const rem = remindersFor(date, ctx);
+  const t = E.foodTotals(d);
+  const palm = p.foodMode === 'palm' || !pl.showNumbers;
+  const weekN = Math.max(1, Math.floor(E.diff(date, p.startDate) / 7) + 1);
+  const ws = E.weekStart(date);
+  let blooms = 0;
+  for (let i = 0; i < 7; i++) {
+    const dd = st.days[E.addDays(ws, i)];
+    if (dd && E.things(dd, pl, p).filter((x) => x.done).length >= 5) blooms++;
+  }
+  const flip = (k) => { const item = th.find((x) => x.k === k); S.patchDay(date, { t: { ...(d.t || {}), [k]: !item.done } }); };
+  const addWater = (ml) => S.patchDay(date, { water: Math.max(0, (d.water || 0) + ml) });
+  const series = E.weightSeries(st.days);
+  const avg = series.length ? series[series.length - 1].avg : null;
+  const yest = st.days[E.addDays(date, -1)];
+  const workoutDone = d.workout && d.workout.doneAt;
+
+  const rows = {
+    sleep: { d: d.sleep != null ? `昨晚 ${d.sleep} 小时，目标 ${pl.sleep} 小时以上` : `目标 ${pl.sleep} 小时以上`, c: html`<${Num} id="in-sleep" label="睡眠小时" value=${d.sleep ?? null} unit="小时" min=${0} max=${16} width=${56} onCommit=${(v) => S.patchDay(date, { sleep: v })}/>` },
+    water: { d: `${n0(d.water || 0)} / ${n0(pl.water)} ml`, c: html`<div class="row" style="gap:4px;flex-wrap:nowrap"><button type="button" class="btn ghost sm" onClick=${() => addWater(250)}>+250</button><button type="button" class="btn ghost sm" onClick=${() => addWater(500)}>+500</button><button type="button" class="icon-btn" style="width:28px" aria-label="减少 250 毫升" onClick=${() => addWater(-250)}>−</button></div>` },
+    food: { d: palm ? `手掌法 ${d.palm || 0} / 3 餐` : `${n0(t.kcal)} / ${n0(pl.kcal)} 千卡 · 蛋白 ${n0(t.p)} / ${pl.protein} g`, c: html`<a class="btn ghost sm" href="#food">记录</a>` },
+    move: { d: workoutDone ? `已完成 ${QS.SESS[d.workout.key].name}` : `下一节 ${ctx.next.name}，或走够 ${n0(pl.steps)} 步`, c: html`<div class="row" style="gap:6px;flex-wrap:nowrap"><${Num} id="in-steps" label="今日步数" value=${d.steps ?? null} placeholder="步数" min=${0} max=${100000} width=${72} onCommit=${(v) => S.patchDay(date, { steps: v })}/><a class="btn ghost sm" href="#train">训练</a></div>` },
+    posture: { d: '10 分钟，改善圆肩和头前伸', c: html`<a class="btn ghost sm" href="#train-posture">看动作</a>` },
+    am: { d: ctx.skin.am.map((x) => x.t).join(' → '), c: null },
+    pm: { d: `今晚 ${ctx.skin.night.n}`, c: html`<a class="btn ghost sm" href="#skin">方案</a>` },
+  };
+
+  return html`
+    <header class="stack-s" style="padding-block:2px 6px">
+      <div class="day-nav">
+        <button type="button" class="icon-btn" aria-label="前一天" onClick=${() => shiftDate(-1)}>${Icon.left()}</button>
+        <div><h1>${E.fmtDate(date)}</h1><p class="term">${term.name}第 ${term.day} 天${isToday ? '' : ' · 正在补记这一天'}</p></div>
+        <button type="button" class="icon-btn" aria-label="后一天" disabled=${isToday} onClick=${() => shiftDate(1)}>${Icon.right()}</button>
+      </div>
+    </header>
+    <div class="cols">
+      <div>
+        <${Sec} first=${true}>
+          <div class="hero-day">
+            <div class="flower-wrap"><${Flower} states=${th.map((x) => x.done)} size=${148}/><div class="count" aria-label=${`完成 ${done} 件，共 7 件`}>${done}/7</div></div>
+            <div class="stack-s">
+              <h2>${done === 7 ? '七件事都做到了' : done === 0 ? '从最容易的一件开始' : `今天做到了 ${done} 件`}</h2>
+              <p class="note">${done === 7 ? '好好休息，明天继续。' : `还差：${left.join('、')}`}</p>
+              <p class="small muted">本周 ${blooms} 天开花（做到 5 件以上）</p>
+            </div>
+          </div>
+          ${rem.length ? html`<div class="stack-s">${rem.map((r) => html`<${Notice} s=${r.s} title=${r.t} href=${r.href}>${r.d}<//>`)}</div>` : null}
+        <//>
+        <${Sec} title="今日七件事" right=${isToday ? null : html`<button type="button" class="link" onClick=${goToday}>回到今天</button>`}>
+          <div>
+            ${QS.THING_KEYS.map((k) => {
+              const item = th.find((x) => x.k === k);
+              return html`<div class="thing"><${Tick} on=${item.done} label=${`${QS.THINGS[k].n}：${item.done ? '已完成，点击取消' : '点击标记完成'}`} onClick=${() => flip(k)}/>
+                <div><div class="t">${QS.THINGS[k].n}</div><div class="d">${rows[k].d}</div></div>
+                ${rows[k].c}
+              </div>`;
+            })}
+          </div>
+          ${p.sex === 'f' && p.trackCycle ? html`<div class="chips"><button type="button" class=${'chip' + (d.period ? ' on' : '')} aria-pressed=${d.period ? 'true' : 'false'} onClick=${() => S.patchDay(date, { period: !d.period })}>今天在经期</button></div>` : null}
+        <//>
+      </div>
+      <div>
+        ${pl.showNumbers ? html`<${Sec} title="今晨体重" note="空腹、上完厕所后称最准。单日波动主要是水分，看 7 日均值。">
+          <div class="row between">
+            <${Num} id="in-weight" label="今晨体重" value=${d.weight ?? null} unit="kg" min=${25} max=${300} placeholder="—" width=${88} onCommit=${(v) => S.patchDay(date, { weight: v })}/>
+            <div class="small muted tn">${yest && yest.weight != null ? `昨天 ${n1(yest.weight)} · ` : ''}7 日均值 ${n1(avg)} kg</div>
+          </div>
+        <//>` : null}
+        <${Sec} title="当前计划" right=${html`<${Pill} s="info">${pl.modeName} · 第 ${weekN} 周<//>`}>
+          <div class="kv">
+            ${pl.showNumbers ? html`<div><span class="v">${n0(pl.kcal)}<small>千卡</small></span><span class="k">每日热量</span></div>
+            <div><span class="v">${pl.protein}<small>g</small></span><span class="k">蛋白质</span></div>` : null}
+            <div><span class="v">${n0(pl.water)}<small>ml</small></span><span class="k">饮水</span></div>
+            <div><span class="v">${n0(pl.steps)}<small>步</small></span><span class="k">步数</span></div>
+          </div>
+          ${pl.warnings.map((w) => html`<${Notice} s=${w.s}>${w.t}<//>`)}
+          <p class="small muted">${term.tip}</p>
+        <//>
+      </div>
+    </div>`;
+}
+
+// ---------- 饮食 ----------
+const SLOTS = ['早餐', '午餐', '晚餐', '加餐'];
+function defaultSlot() { const h = new Date().getHours(); return h < 10 ? '早餐' : h < 15 ? '午餐' : h < 21 ? '晚餐' : '加餐'; }
+const FLAG_OPTS = [{ v: 'salt', l: '高盐重口' }, { v: 'sugar', l: '奶茶甜食' }, { v: 'alcohol', l: '喝酒' }, { v: 'snack', l: '夜宵' }];
+
+function MacroBar({ label, val, target, unit }) {
+  return html`<div class="macro"><div class="row between small"><span>${label}</span><span class="tn">${n0(val)} / ${n0(target)} ${unit}</span></div><${Meter} pct=${(val / target) * 100} over=${val > target * 1.1}/></div>`;
+}
+
+function rememberFood(f) {
+  const items = [...S.state.foods.items];
+  const i = items.findIndex((x) => x.name === f.name);
+  if (i >= 0) items[i] = { ...items[i], n: (items[i].n || 1) + 1 };
+  else items.push({ ...f, n: 1 });
+  S.setFoods({ items: items.sort((a, b) => b.n - a.n).slice(0, 40) });
+}
+
+function MealAdd({ onAdd, slot, setSlot }) {
+  const caps = S.state.caps;
+  const [text, setText] = useState('');
+  const [img, setImg] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [res, setRes] = useState(null);
+  const [err, setErr] = useState('');
+  const [manual, setManual] = useState(false);
+  const [m, setM] = useState({ name: '', kcal: '', p: '', c: '', f: '' });
+  const showManual = manual || !caps.ai;
+
+  const run = async () => {
+    if (!text.trim() && !img) { setErr('先写下吃了什么，或者选一张照片。'); return; }
+    setBusy(true); setErr(''); setRes(null);
+    try { setRes(await AI.estimateMeal(text.trim(), img)); }
+    catch (e) { setErr(AI.errorText(e)); }
+    setBusy(false);
+  };
+  const saveRes = () => {
+    const sum = (key) => res.items.reduce((s, x) => s + x[key], 0);
+    onAdd({ slot, name: res.items.map((x) => x.name).join('、'), kcal: sum('kcal'), p: sum('p'), c: sum('c'), f: sum('f'), est: true });
+    setRes(null); setText(''); setImg(null);
+  };
+  const saveManual = () => {
+    if (!m.name.trim() || !(+m.kcal >= 0) || m.kcal === '') { setErr('至少要填名称和热量。'); return; }
+    onAdd({ slot, name: m.name.trim(), kcal: Math.round(+m.kcal), p: Math.round(+m.p || 0), c: Math.round(+m.c || 0), f: Math.round(+m.f || 0) });
+    rememberFood({ name: m.name.trim(), unit: '自己添加', kcal: Math.round(+m.kcal), p: Math.round(+m.p || 0), c: Math.round(+m.c || 0), f: Math.round(+m.f || 0) });
+    setM({ name: '', kcal: '', p: '', c: '', f: '' }); setErr('');
+  };
+  const setField = (k) => (v) => setM({ ...m, [k]: v });
+
+  return html`<div class="stack">
+    <${Seg} label="餐次" value=${slot} onChange=${setSlot} options=${SLOTS.map((s) => ({ v: s, l: s }))}/>
+    ${caps.ai ? html`<div class="stack">
+      <${Area} id="meal-text" label="吃了什么" value=${text} onInput=${setText} placeholder="比如：一碗牛肉面，一个卤蛋，半杯无糖豆浆"/>
+      <div class="row">
+        <button type="button" class="btn" disabled=${busy} onClick=${run}>${busy ? 'Claude 正在估算…' : '让 Claude 估算'}</button>
+        ${caps.images ? html`<label class="btn ghost">${Icon.camera()}${img ? '换一张' : '拍照估算'}<input id="meal-photo" type="file" accept="image/*" hidden onChange=${(e) => setImg(e.target.files[0] || null)}/></label>` : null}
+        <button type="button" class="link" onClick=${() => setManual(!manual)}>${manual ? '收起手动填写' : '手动填写'}</button>
+      </div>
+      ${img ? html`<p class="small muted">已选一张照片。<button type="button" class="link" onClick=${() => setImg(null)}>移除</button></p>` : null}
+    </div>` : html`<p class="note">${window.QS_OFFLINE ? '离线版没有 Claude 估算，直接手动填写。' : '用 claude.ai 账号打开这个页面后，可以直接写一句话或拍照估算。现在先手动填写。'}</p>`}
+    ${err ? html`<p class="err">${err}</p>` : null}
+    ${res ? html`<div class="stack-s">
+      <div class="list">${res.items.map((x) => html`<div class="li"><div><div>${x.name}</div><div class="d">${x.amount}</div></div><div class="small tn">${x.kcal} 千卡 · 蛋白 ${x.p} g</div></div>`)}</div>
+      ${res.note ? html`<p class="small muted">${res.note}</p>` : null}
+      <div class="row"><button type="button" class="btn" onClick=${saveRes}>记下这一餐</button><button type="button" class="btn ghost" onClick=${() => setRes(null)}>不要了</button></div>
+    </div>` : null}
+    ${showManual ? html`<div class="stack">
+      <${Field} id="m-name" label="名称" value=${m.name} onInput=${setField('name')} placeholder="比如：公司食堂午餐"/>
+      <div class="grid-2">
+        <${Field} id="m-kcal" label="热量（千卡）" inputmode="numeric" value=${m.kcal} onInput=${setField('kcal')}/>
+        <${Field} id="m-p" label="蛋白质（g）" inputmode="numeric" value=${m.p} onInput=${setField('p')}/>
+        <${Field} id="m-c" label="碳水（g，可不填）" inputmode="numeric" value=${m.c} onInput=${setField('c')}/>
+        <${Field} id="m-f" label="脂肪（g，可不填）" inputmode="numeric" value=${m.f} onInput=${setField('f')}/>
+      </div>
+      <div><button type="button" class="btn" onClick=${saveManual}>添加</button></div>
+    </div>` : null}
+  </div>`;
+}
+
+function QuickFoods({ onPick, slot }) {
+  const [q, setQ] = useState('');
+  const recent = S.state.foods.items;
+  const seen = new Set(recent.map((x) => x.name));
+  const base = QS.FOODS.filter((x) => !seen.has(x[0])).map(([name, unit, kcal, p, c, f]) => ({ name, unit, kcal, p, c, f }));
+  const all = [...recent, ...base];
+  const list = q.trim() ? all.filter((x) => x.name.includes(q.trim())) : all.slice(0, 14);
+  return html`<div class="stack">
+    <label class="field"><span>搜常见食物</span><input id="food-q" type="text" autocomplete="off" value=${q} placeholder="比如：豆浆、奶茶、米饭" onInput=${(e) => setQ(e.target.value)}/></label>
+    <div class="chips">${list.map((f) => html`<button type="button" class="chip" title=${f.unit} onClick=${() => onPick(f)}>${f.name} <em>${f.kcal}</em></button>`)}${list.length ? null : html`<span class="small muted">没找到，用上面的方式记录。</span>`}</div>
+    <p class="small muted">点一下直接记入${slot}，数字是千卡。份量：${list.slice(0, 3).map((f) => `${f.name} ${f.unit}`).join('；')}。</p>
+  </div>`;
+}
+
+function Food() {
+  const date = UI.date, st = S.state, p = st.profile, d = S.day(date), ctx = ctxOf(date), pl = ctx.plan;
+  const t = E.foodTotals(d);
+  const palm = p.foodMode === 'palm' || !pl.showNumbers;
+  const meals = d.meals || [];
+  const flags = d.flags || {};
+  const [slot, setSlot] = useState(defaultSlot);
+  const addMeal = (m) => { S.patchDay(date, { meals: [...S.day(date).meals || [], { id: newId(), ...m }] }); S.toast(`已记下 ${m.name}`); };
+  const pick = (f) => { addMeal({ slot, name: f.name, kcal: f.kcal, p: f.p, c: f.c, f: f.f }); rememberFood(f); };
+  const rm = (id) => S.patchDay(date, { meals: meals.filter((x) => x.id !== id) });
+  const leftKcal = pl.kcal - t.kcal;
+
+  return html`
+    <header class="stack-s"><h1>饮食</h1><${DateBar}/></header>
+    <div class="cols">
+      <div>
+        ${palm ? html`<${Sec} first=${true} title="手掌法" note="不算数字，每餐按手掌估份量：蛋白质一到两掌，蔬菜一到两拳，主食一拳，油脂一拇指。">
+          <div class="row">
+            ${[1, 2, 3].map((n) => html`<button type="button" class=${'chip' + ((d.palm || 0) >= n ? ' on' : '')} onClick=${() => S.patchDay(date, { palm: (d.palm || 0) === n ? n - 1 : n })}>第 ${n} 餐吃好了</button>`)}
+          </div>
+        <//>` : html`<${Sec} first=${true}>
+          <div class="stack-s">
+            <span class="label">${leftKcal >= 0 ? '今天还可以吃' : '今天多吃了'}</span>
+            <div class="big-fig">${n0(Math.abs(leftKcal))}<small>千卡</small></div>
+            ${leftKcal < 0 ? html`<p class="note">多吃一天影响很小，明天照常吃，不用靠少吃补回来。</p>` : null}
+          </div>
+          <div class="stack-s">
+            <${MacroBar} label="热量" val=${t.kcal} target=${pl.kcal} unit="千卡"/>
+            <${MacroBar} label="蛋白质" val=${t.p} target=${pl.protein} unit="g"/>
+            <${MacroBar} label="碳水" val=${t.c} target=${pl.carb} unit="g"/>
+            <${MacroBar} label="脂肪" val=${t.f} target=${pl.fat} unit="g"/>
+          </div>
+          ${t.n >= 3 && t.kcal < pl.kcal * 0.7 ? html`<${Notice} s="warn" title="今天吃得偏少">长期吃太少会掉肌肉、气色变差，晚点可以加一份蛋白质。<//>` : null}
+        <//>`}
+        ${palm ? null : html`<${Sec} title="今天吃的">
+          ${meals.length ? html`<div class="list">${SLOTS.flatMap((sl) => meals.filter((m) => m.slot === sl).map((m) => html`<div class="li" key=${m.id}><div><div>${m.name}</div><div class="d tn">${sl} · ${m.kcal} 千卡 · 蛋白 ${m.p} g${m.est ? ' · 估算' : ''}</div></div><button type="button" class="icon-btn" aria-label=${`删除 ${m.name}`} onClick=${() => rm(m.id)}>${Icon.close()}</button></div>`))}</div>` : html`<div class="empty"><span>还没有记录</span><span class="small">在下面写一句话，或点常见食物，这里会列出今天吃的。</span></div>`}
+        <//>
+        <${Sec} title="记一餐"><${MealAdd} onAdd=${addMeal} slot=${slot} setSlot=${setSlot}/><//>`}
+      </div>
+      <div>
+        ${palm ? null : html`<${Sec} title="常吃的"><${QuickFoods} onPick=${pick} slot=${slot}/><//>`}
+        <${Sec} title="今天有没有" note="标记之后，程序会看这些事和第二天的水肿、长痘有没有关系。">
+          <${Chips} value=${FLAG_OPTS.filter((o) => flags[o.v]).map((o) => o.v)} options=${FLAG_OPTS} onToggle=${(k) => S.patchDay(date, { flags: { ...flags, [k]: !flags[k] } })}/>
+        <//>
+        <${Sec} title="怎么吃">
+          <div>
+            <details><summary>减脂期的吃法</summary><p class="note">每餐先保证蛋白质，再吃够蔬菜，主食不要完全不吃，训练日可以多吃一点。三餐定时比精确到克更重要。</p></details>
+            <details><summary>外卖怎么点</summary><p class="note">选有明确蛋白质的菜，比如鸡、牛、鱼、虾、豆腐。备注少油少盐，酱汁分开放。米饭吃一半，别完全不吃。奶茶选小杯无糖或少糖。</p></details>
+            <details><summary>想少水肿</summary><p class="note">晚餐少盐少酒，火锅、烧烤和腌制食品安排在白天。多喝水，睡够。第二天早上的水肿多半和前一晚有关。</p></details>
+            <details><summary>不要做的事</summary><p class="note">不要长期低于基础代谢（你大约是 ${n0(pl.bmr)} 千卡），不用泻药、减肥药和极端断食。掉得太快时，流失的多半是水分和肌肉，皮肤也会变差。</p></details>
+          </div>
+        <//>
+      </div>
+    </div>`;
+}
+
+// ---------- 训练 ----------
+function useWakeLock(active) {
+  useEffect(() => {
+    if (!active || !navigator.wakeLock) return undefined;
+    let lock = null, dead = false;
+    navigator.wakeLock.request('screen').then((l) => { if (dead) l.release(); else lock = l; }).catch(() => {});
+    return () => { dead = true; if (lock) lock.release().catch(() => {}); };
+  }, [active]);
+}
+
+function RestBar() {
+  const [, tick] = useState(0);
+  const r = UI.rest;
+  useEffect(() => {
+    if (!r) return undefined;
+    const t = setInterval(() => {
+      if (UI.rest && Date.now() >= UI.rest.end) { UI.rest = null; S.emit(); clearInterval(t); }
+      else tick((v) => v + 1);
+    }, 500);
+    return () => clearInterval(t);
+  }, [r && r.end]);
+  if (!r) return null;
+  const left = Math.max(0, Math.ceil((r.end - Date.now()) / 1000));
+  return html`<div class="rest" role="timer" aria-label="组间休息"><div><span class="small">组间休息</span> <span class="t">${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}</span></div>
+    <div class="row" style="flex-wrap:nowrap"><button type="button" onClick=${() => { UI.rest = { ...r, end: r.end + 30000 }; S.emit(); }}>+30 秒</button><button type="button" onClick=${() => { UI.rest = null; S.emit(); }}>跳过</button></div></div>`;
+}
+
+function ExerciseCard({ item, venue, date }) {
+  const ex = QS.EX[item.ex];
+  const variant = ex[venue];
+  const unit = ex.unit;
+  const last = E.lastPerf(S.state.days, item.ex, venue, date);
+  const hint = unit ? null : E.progressHint(last, item.lo, item.hi);
+  const w = S.day(date).workout;
+  const sets = (w.sets && w.sets[item.ex]) || [];
+  const lastSet = (i) => (last ? last.sets[Math.min(i, last.sets.length - 1)] : null);
+  const patchSet = (i, patch) => {
+    const cur = S.day(date).workout;
+    const arr = Array.from({ length: item.sets }, (_, j) => ((cur.sets && cur.sets[item.ex]) || [])[j] || {});
+    arr[i] = { ...arr[i], ...patch };
+    S.patchDay(date, { workout: { ...cur, sets: { ...(cur.sets || {}), [item.ex]: arr } } });
+  };
+  const finishSet = (i) => {
+    const s = sets[i] || {}, l = lastSet(i);
+    if (s.ok) { patchSet(i, { ok: false }); return; }
+    patchSet(i, { ok: true, kg: s.kg != null ? s.kg : l && l.kg != null ? l.kg : null, reps: s.reps != null ? s.reps : l && l.reps != null ? l.reps : item.lo });
+    UI.rest = { end: Date.now() + ex.rest * 1000 };
+    S.emit();
+  };
+  const repUnit = unit === 'sec' ? '秒' : '次';
+  return html`<div class="ex">
+    <div class="row between" style="align-items:baseline">
+      <h3>${variant}</h3>
+      <span class="small muted tn">${item.sets} 组 × ${item.lo}–${item.hi} ${repUnit}</span>
+    </div>
+    <p class="small muted">${ex.cue} <a href=${'https://search.bilibili.com/all?keyword=' + encodeURIComponent(variant.split('（')[0] + ' 动作教学')} target="_blank" rel="noopener">看演示</a></p>
+    ${last && !unit ? html`<p class="small tn">上次 ${last.sets.map((s) => `${s.kg != null ? s.kg + ' kg × ' : ''}${s.reps}`).join('，')}${hint ? html`<span class="muted"> · ${hint.t}</span>` : null}</p>` : null}
+    <div class="stack-s">
+      ${Array.from({ length: item.sets }, (_, i) => {
+        const s = sets[i] || {}, l = lastSet(i);
+        return html`<div class="set-row">
+          <span class="idx">${i + 1}</span>
+          ${unit ? html`<span></span>` : html`<${Num} id=${`s-${item.ex}-${i}-kg`} label=${`第 ${i + 1} 组重量`} value=${s.kg ?? null} unit="kg" min=${0} max=${500} width=${64} placeholder=${l && l.kg != null ? String(l.kg) : ''} onCommit=${(v) => patchSet(i, { kg: v })}/>`}
+          <${Num} id=${`s-${item.ex}-${i}-r`} label=${`第 ${i + 1} 组${repUnit}数`} value=${s.reps ?? null} unit=${repUnit} min=${0} max=${600} width=${56} placeholder=${l && l.reps != null ? String(l.reps) : String(item.lo)} onCommit=${(v) => patchSet(i, { reps: v })}/>
+          <span></span>
+          <button type="button" class=${'done-btn' + (s.ok ? ' on' : '')} aria-pressed=${s.ok ? 'true' : 'false'} aria-label=${`完成第 ${i + 1} 组`} onClick=${() => finishSet(i)}>${Icon.check()}</button>
+        </div>`;
+      })}
+    </div>
+  </div>`;
+}
+
+function Train() {
+  const date = UI.date, st = S.state, p = st.profile, d = S.day(date), ctx = ctxOf(date);
+  const pgm = ctx.pgm, w = d.workout;
+  const [pick, setPick] = useState(null);
+  const [venue, setVenue] = useState(p.venue === 'home' ? 'home' : 'gym');
+  const idx = w ? Math.max(0, pgm.findIndex((s) => s.key === w.key)) : pick != null ? pick : ctx.nextIdx;
+  const sess = pgm[idx];
+  const active = !!(w && !w.doneAt);
+  useWakeLock(active);
+  const weekDone = E.weekWorkouts(st.days, date);
+  const v = w ? w.venue : venue;
+  const totalOk = w && w.sets ? Object.values(w.sets).reduce((a, arr) => a + arr.filter((s) => s.ok).length, 0) : 0;
+  const totalSets = sess.items.reduce((a, x) => a + x.sets, 0);
+  const start = () => S.patchDay(date, { workout: { key: sess.key, venue, sets: {}, startedAt: Date.now() } });
+  const finish = () => { UI.rest = null; S.patchDay(date, { workout: { ...w, doneAt: Date.now() } }); S.toast('训练完成，记录已保存'); };
+  const history = Object.keys(st.days).filter((k) => st.days[k].workout && st.days[k].workout.doneAt).sort().reverse().slice(0, 8);
+  const postureRef = useRef(null);
+  useEffect(() => {
+    if (location.hash === '#train-posture' && postureRef.current) postureRef.current.scrollIntoView();
+  }, []);
+
+  return html`
+    <header class="stack-s"><h1>训练</h1><${DateBar}/></header>
+    <div class="cols">
+      <div class="span-2">
+        <${Sec} first=${true} title=${active ? `正在练：${sess.name}` : w ? `练完了：${sess.name}` : `下一节：${sess.name}`} right=${html`<${Pill} s=${weekDone >= p.trainDays ? 'good' : 'info'}>本周 ${weekDone} / ${p.trainDays} 次<//>`}>
+          ${w ? null : html`<div class="stack">
+            <p class="note">${sess.focus}。按顺序循环，漏了一天接着练下一节，不用补。${p.level === 'new' ? '前两周每个动作先做 2 组，学会发力比重量更重要。' : ''}</p>
+            ${sess.note ? html`<p class="note">${sess.note}</p>` : null}
+            <div class="row">
+              <${Seg} label="训练场地" value=${venue} onChange=${setVenue} options=${[{ v: 'gym', l: '健身房' }, { v: 'home', l: '在家' }]}/>
+              <button type="button" class="btn" onClick=${start}>开始训练</button>
+            </div>
+            <div class="chips">${pgm.map((s, i) => html`<button type="button" class=${'chip' + (i === idx ? ' on' : '')} onClick=${() => setPick(i)}>${s.name}</button>`)}</div>
+          </div>`}
+          ${active ? html`<div class="stack-s"><div class="row between small"><span>${v === 'gym' ? '健身房' : '在家'}版 · 先热身 5 分钟</span><span class="tn">${totalOk} / ${totalSets} 组</span></div><${Meter} pct=${(totalOk / totalSets) * 100}/></div>` : null}
+          ${w && w.doneAt ? html`<div class="stack-s"><p class="note">${v === 'gym' ? '健身房' : '在家'} · 完成 ${totalOk} 组。拉伸 5 分钟，晚上睡够，肌肉是休息时长的。</p><div><${Confirm} label="撤销这次记录" sure="确定撤销？再点一次" onYes=${() => S.patchDay(date, { workout: null })}/></div></div>` : null}
+        <//>
+        ${w && active ? html`<div>${sess.items.map((it) => html`<${ExerciseCard} key=${it.ex} item=${it} venue=${v} date=${date}/>`)}
+          <div class="row between" style="padding-block:14px">
+            <button type="button" class="btn" onClick=${finish}>完成训练</button>
+            <${Confirm} label="放弃这次训练" sure="确定放弃？再点一次" onYes=${() => { UI.rest = null; S.patchDay(date, { workout: null }); }}/>
+          </div></div>` : null}
+        ${!w ? html`<div>
+          ${sess.items.map((it) => { const ex = QS.EX[it.ex]; return html`<div class="li" key=${it.ex}><div><div>${ex[venue]}</div><div class="d">${ex.m}</div></div><div class="small muted tn">${it.sets} × ${it.lo}–${it.hi}${ex.unit === 'sec' ? ' 秒' : ''}</div></div>`; })}
+        </div>` : null}
+      </div>
+      <div ref=${postureRef} id="train-posture">
+        <${Sec} title="体态 10 分钟" note="每天做一次，办公桌前久坐的人效果最明显。" right=${html`<${Tick} on=${E.things(d, ctx.plan, p).find((x) => x.k === 'posture').done} label="体态练习完成" onClick=${() => { const t = d.t || {}; const cur = E.things(d, ctx.plan, p).find((x) => x.k === 'posture').done; S.patchDay(date, { t: { ...t, posture: !cur } }); }}/>`}>
+          <div class="list">${QS.POSTURE.map((x) => html`<div class="li"><div><div>${x.n}</div><div class="d">${x.how}</div></div><div class="small muted tn" style="max-width:92px;text-align:right">${x.dose}</div></div>`)}</div>
+        <//>
+      </div>
+      <div>
+        <${Sec} title="活动量" note="每周中等强度有氧累计 150 分钟以上；步数是最容易坚持的减脂手段。">
+          <div class="row" style="gap:16px">
+            <label class="row"><span class="small">步数</span><${Num} id="t-steps" label="今日步数" value=${d.steps ?? null} min=${0} max=${100000} width=${88} onCommit=${(val) => S.patchDay(date, { steps: val })}/></label>
+            <label class="row"><span class="small">有氧</span><${Num} id="t-cardio" label="有氧分钟" value=${d.cardio ?? null} unit="分钟" min=${0} max=${600} width=${64} onCommit=${(val) => S.patchDay(date, { cardio: val })}/></label>
+          </div>
+        <//>
+        <${Sec} title="最近训练">
+          ${history.length ? html`<div class="list">${history.map((k) => { const h = st.days[k].workout; const n = Object.values(h.sets || {}).reduce((a, arr) => a + arr.filter((s) => s.ok).length, 0); return html`<div class="li"><div>${QS.SESS[h.key].name}<div class="d">${E.fmtShort(k)} · ${h.venue === 'gym' ? '健身房' : '在家'}</div></div><div class="small muted tn">${n} 组</div></div>`; })}</div>` : html`<div class="empty"><span>还没有训练记录</span><span class="small">完成第一节后，这里会列出最近的训练。</span></div>`}
+        <//>
+      </div>
+    </div>
+    <${RestBar}/>`;
+}
+
+</script>
+<script>
+/* 气色簿 · 身材：体重趋势、围度、对比照片。 */
+
+function WeightChart({ series, goal }) {
+  const [ref, width] = useWidth();
+  const [hi, setHi] = useState(null);
+  let chart = null;
+  if (series.length < 2) {
+    chart = html`<div class="empty"><span>记录两天体重后，这里会出现趋势线</span><span class="small">到今日页填今晨体重。</span></div>`;
+  } else if (width > 0) {
+    const W = width, H = W < 600 ? 230 : 290;
+    const m = { l: 42, r: 44, t: 14, b: 26 };
+    const first = series[0].date, last = series[series.length - 1].date, span = Math.max(1, E.diff(last, first));
+    const vals = series.flatMap((s) => [s.w, s.avg]);
+    let lo = Math.min(...vals), top = Math.max(...vals);
+    const showGoal = goal != null && goal >= lo - 3 && goal <= top + 3;
+    if (showGoal) { lo = Math.min(lo, goal); top = Math.max(top, goal); }
+    const ticks = niceTicks(lo - 0.1, top + 0.1, 4);
+    const y0 = ticks[0], y1 = ticks[ticks.length - 1];
+    const X = (d) => m.l + (E.diff(d, first) / span) * (W - m.l - m.r);
+    const Y = (v) => m.t + ((y1 - v) / (y1 - y0)) * (H - m.t - m.b);
+    const path = (k) => series.map((s, i) => `${i ? 'L' : 'M'}${X(s.date).toFixed(1)} ${Y(s[k]).toFixed(1)}`).join('');
+    const nX = Math.min(span, W < 500 ? 3 : 5);
+    const xTicks = Array.from(new Set(Array.from({ length: nX + 1 }, (_, i) => E.addDays(first, Math.round((span * i) / nX)))));
+    const end = series[series.length - 1];
+    const cur = hi != null && series[hi] ? series[hi] : null;
+    const pick = (e) => {
+      const r = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - r.left;
+      let best = 0, bd = Infinity;
+      series.forEach((s, i) => { const dd = Math.abs(X(s.date) - x); if (dd < bd) { bd = dd; best = i; } });
+      setHi(best);
+    };
+    const onKey = (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      const base = hi == null ? series.length - 1 : hi;
+      setHi(E.clamp(base + (e.key === 'ArrowLeft' ? -1 : 1), 0, series.length - 1));
+    };
+    chart = html`<div class="chart" tabindex="0" role="img" aria-label=${`体重趋势，最新 7 日均值 ${n1(end.avg)} 公斤`} onKeyDown=${onKey} onFocus=${() => setHi(series.length - 1)} onBlur=${() => setHi(null)}>
+      <svg viewBox=${`0 0 ${W} ${H}`} onPointerMove=${pick} onPointerDown=${pick} onPointerLeave=${() => setHi(null)}>
+        ${ticks.map((v) => html`<g><line class="grid-line" x1=${m.l} x2=${W - m.r} y1=${Y(v)} y2=${Y(v)}/><text x=${m.l - 8} y=${Y(v) + 4} text-anchor="end">${v}</text></g>`)}
+        ${xTicks.map((d, i) => html`<text x=${X(d)} y=${H - 6} text-anchor=${i === 0 ? 'start' : i === xTicks.length - 1 ? 'end' : 'middle'}>${E.fmtShort(d)}</text>`)}
+        ${showGoal ? html`<g><line x1=${m.l} x2=${W - m.r} y1=${Y(goal)} y2=${Y(goal)} stroke="var(--good)" stroke-width="1"/><text x=${m.l + 4} y=${Y(goal) - 5}>目标 ${n1(goal)}</text></g>` : null}
+        <path d=${path('w')} fill="none" stroke="var(--dai)" stroke-opacity="0.55" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+        <path d=${path('avg')} fill="none" stroke="var(--rouge)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx=${X(end.date)} cy=${Y(end.avg)} r="4.5" fill="var(--rouge)" stroke="var(--surface)" stroke-width="2"/>
+        <text x=${X(end.date) + 10} y=${Y(end.avg) + 4}>${n1(end.avg)}</text>
+        ${cur ? html`<g><line class="grid-line" x1=${X(cur.date)} x2=${X(cur.date)} y1=${m.t} y2=${H - m.b}/><circle cx=${X(cur.date)} cy=${Y(cur.avg)} r="4.5" fill="var(--rouge)" stroke="var(--surface)" stroke-width="2"/><circle cx=${X(cur.date)} cy=${Y(cur.w)} r="4" fill="var(--dai)" stroke="var(--surface)" stroke-width="2"/></g>` : null}
+      </svg>
+      ${cur ? html`<div class="tip" style=${`left:${E.clamp(X(cur.date) - 62, 0, W - 136)}px`}><span class="small">${E.fmtShort(cur.date)}</span><br/><b>${n1(cur.avg)}</b> 7 日均值<br/><b>${n1(cur.w)}</b> 当天</div>` : null}
+    </div>`;
+  }
+  return html`<div ref=${ref} class="stack-s">
+    ${series.length >= 2 ? html`<div class="legend"><span><i style="background:var(--rouge)"></i>7 日均值</span><span><i style="background:var(--dai);opacity:.55"></i>每日体重</span></div>` : null}
+    ${chart}
+  </div>`;
+}
+
+const MEAS = [['waist', '腰围'], ['hip', '臀围'], ['chest', '胸围'], ['thigh', '大腿'], ['arm', '上臂'], ['calf', '小腿']];
+function measureSeries(days, key) {
+  return Object.keys(days).sort().filter((d) => days[d].measure && days[d].measure[key] != null).map((d) => ({ date: d, v: days[d].measure[key] }));
+}
+function Spark({ vals }) {
+  if (vals.length < 2) return html`<span class="small muted">—</span>`;
+  const W = 84, H = 26, lo = Math.min(...vals), hi = Math.max(...vals), span = hi - lo || 1;
+  const X = (i) => 3 + (i / (vals.length - 1)) * (W - 10), Y = (v) => 4 + ((hi - v) / span) * (H - 8);
+  return html`<svg width=${W} height=${H} viewBox=${`0 0 ${W} ${H}`} aria-hidden="true"><path d=${vals.map((v, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join('')} fill="none" stroke="var(--ink-3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx=${X(vals.length - 1)} cy=${Y(vals[vals.length - 1])} r="3.5" fill="var(--rouge)"/></svg>`;
+}
+function MeasureForm({ date }) {
+  const cur = S.day(date).measure || {};
+  const [f, setF] = useState(() => Object.fromEntries(MEAS.map(([k]) => [k, cur[k] != null ? String(cur[k]) : ''])));
+  const save = () => {
+    const out = {};
+    for (const [k, n] of MEAS) {
+      if (f[k].trim() === '') continue;
+      const v = parseFloat(f[k]);
+      if (!isFinite(v) || v < 10 || v > 250) { S.toast(`${n} 请填 10 到 250 之间的数字`, 'crit'); return; }
+      out[k] = v;
+    }
+    S.patchDay(date, { measure: Object.keys(out).length ? out : null });
+    S.closeSheet();
+    S.toast('围度已保存');
+  };
+  return html`<div class="stack">
+    <p class="note">软尺贴皮肤不勒紧，早上空腹量，每次位置一致。腰围在肚脐上方最细处。不想量的可以留空。</p>
+    <div class="grid-2">${MEAS.map(([k, n]) => html`<${Field} id=${'m-' + k} label=${n + '（cm）'} inputmode="decimal" value=${f[k]} onInput=${(v) => setF({ ...f, [k]: v })}/>`)}</div>
+    <div><button type="button" class="btn" onClick=${save}>保存</button></div>
+  </div>`;
+}
+
+const PHOTO_KINDS = [{ v: 'face', l: '正脸' }, { v: 'faceSide', l: '侧脸' }, { v: 'front', l: '身体正面' }, { v: 'side', l: '身体侧面' }, { v: 'back', l: '背面' }];
+
+function PhotoView({ item }) {
+  return html`<div class="stack">
+    <img src=${S.photoUrl(item.id)} alt=${`${item.date} 的对比照`} style="width:100%;border-radius:6px"/>
+    <div class="row between"><span class="small muted tn">${item.date}</span><${Confirm} label="删除这张" sure="永久删除？再点一次" onYes=${async () => { S.closeSheet(); await S.deletePhoto(item.id); S.toast('已删除'); }}/></div>
+  </div>`;
+}
+
+function Photos() {
+  const st = S.state;
+  const [kind, setKind] = useState('face');
+  const [busy, setBusy] = useState(false);
+  const [pos, setPos] = useState(50);
+  const [aId, setA] = useState(null);
+  const [bId, setB] = useState(null);
+  const list = st.photos.items.filter((x) => x.kind === kind).sort((x, y) => (x.date < y.date ? -1 : 1));
+  const a = list.find((x) => x.id === aId) || list[0];
+  const b = list.find((x) => x.id === bId) || list[list.length - 1];
+  const onFile = async (e) => {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    setBusy(true);
+    try { await S.uploadPhoto(file, { kind, date: E.today() }); S.toast('照片已保存'); }
+    catch (err) { S.toast(err && err.code === 'quota_or_state' ? '照片空间已满，删掉几张再试。' : '照片没有保存成功，换一张或稍后再试。', 'crit'); }
+    setBusy(false);
+  };
+  if (!st.caps.photos) return html`<div class="empty"><span>${window.QS_OFFLINE ? '离线版不能存对比照' : '登录 claude.ai 打开这个页面后可以存对比照'}</span><span class="small">${window.QS_OFFLINE ? '其他功能不受影响。' : '现在的打开方式没有照片存储，其他功能不受影响。'}</span></div>`;
+  return html`<div class="stack">
+    <div class="row between">
+      <${Seg} label="照片类型" value=${kind} onChange=${(v) => { setKind(v); setA(null); setB(null); }} options=${PHOTO_KINDS}/>
+      <label class=${'btn' + (busy ? ' ghost' : '')}>${Icon.camera()}${busy ? '上传中…' : '添加照片'}<input id="photo-file" type="file" accept="image/*" hidden disabled=${busy} onChange=${onFile}/></label>
+    </div>
+    ${list.length >= 2 && a.id !== b.id ? html`<div class="stack-s">
+      <div class="cmp">
+        <img src=${S.photoUrl(b.id)} alt=${`${b.date} 的照片`}/>
+        <img src=${S.photoUrl(a.id)} alt=${`${a.date} 的照片`} style=${`clip-path:inset(0 ${100 - pos}% 0 0)`}/>
+        <div class="bar" style=${`left:${pos}%`}></div>
+        <span class="lb" style="left:8px">${E.fmtShort(a.date)}</span><span class="lb" style="right:8px">${E.fmtShort(b.date)}</span>
+        <input id="cmp-range" type="range" min="0" max="100" value=${pos} aria-label="拖动对比两张照片" onInput=${(e) => setPos(+e.target.value)}/>
+      </div>
+      <div class="grid-2" style="max-width:420px">
+        <${Select} id="cmp-a" label="左边" value=${a.id} onChange=${setA}>${list.map((x) => html`<option value=${x.id}>${x.date}</option>`)}<//>
+        <${Select} id="cmp-b" label="右边" value=${b.id} onChange=${setB}>${list.map((x) => html`<option value=${x.id}>${x.date}</option>`)}<//>
+      </div>
+    </div>` : null}
+    ${list.length ? html`<div class="thumbs">${list.map((x) => html`<button type="button" class="thumb" key=${x.id} aria-label=${`查看 ${x.date} 的照片`} onClick=${() => S.openSheet(x.date, () => html`<${PhotoView} item=${x}/>`)}><img src=${S.photoUrl(x.id)} alt="" loading="lazy"/><span>${E.fmtShort(x.date)}</span></button>`)}</div>` : html`<div class="empty"><span>还没有${PHOTO_KINDS.find((k) => k.v === kind).l}照片</span><span class="small">同样的光线、距离和表情，每 4 周拍一次。两张以上就能拖动对比。</span></div>`}
+    <p class="small muted">照片只存在这个私密页面里。以后如果分享这个页面，不要给对方编辑权限。</p>
+  </div>`;
+}
+
+// ---------- 体成分 ----------
+// [字段, 名称, 下限, 上限, 是否必填]
+const COMP_FIELDS = [
+  ['weight', '体重（kg）', 30, 250, true],
+  ['pbf', '体脂率（%）', 3, 70, true],
+  ['smm', '骨骼肌（kg）', 5, 80, true],
+  ['fat', '体脂肪量（kg）', 1, 200, false],
+  ['visceral', '内脏脂肪等级', 1, 30, false],
+  ['whr', '腰臀比', 0.5, 1.5, false],
+  ['bmr', '基础代谢（千卡）', 500, 4000, false],
+  ['ecw', '细胞外水比', 0.3, 0.5, false],
+];
+const COMP_SEG = [['ra', '右臂'], ['la', '左臂'], ['tr', '躯干'], ['rl', '右腿'], ['ll', '左腿']];
+
+function CompForm({ edit }) {
+  const str = (v) => (v != null ? String(v) : '');
+  const [f, setF] = useState(() => ({
+    date: edit ? edit.date : E.today(),
+    ...Object.fromEntries(COMP_FIELDS.map(([k]) => [k, edit ? str(edit[k]) : ''])),
+    ...Object.fromEntries(COMP_SEG.map(([k]) => [k, edit && edit.lean ? str(edit.lean[k]) : ''])),
+  }));
+  const set = (k) => (v) => setF((cur) => ({ ...cur, [k]: v }));
+  const items = S.state.comp.items;
+  const save = () => {
+    if (!f.date || f.date > E.today()) { S.toast('请选择今天或之前的日期', 'crit'); return; }
+    const rec = { ...(edit || {}), id: edit ? edit.id : newId(), date: f.date };
+    for (const [k, label, lo, hi, must] of COMP_FIELDS) {
+      const t = f[k].trim();
+      if (t === '') {
+        if (must) { S.toast(`请填写${label}`, 'crit'); return; }
+        delete rec[k];
+        continue;
+      }
+      const v = parseFloat(t);
+      if (!isFinite(v) || v < lo || v > hi) { S.toast(`${label}请填 ${lo} 到 ${hi} 之间的数字`, 'crit'); return; }
+      rec[k] = v;
+    }
+    if (rec.fat == null) rec.fat = E.round1((rec.weight * rec.pbf) / 100);
+    const lean = {};
+    for (const [k, n] of COMP_SEG) {
+      const t = f[k].trim();
+      if (t === '') continue;
+      const v = parseFloat(t);
+      if (!isFinite(v) || v < 20 || v > 250) { S.toast(`${n}请填 20 到 250 之间的百分比`, 'crit'); return; }
+      lean[k] = v;
+    }
+    if (Object.keys(lean).length) rec.lean = lean; else delete rec.lean;
+    // 同一天只保留一条，图表才不会出现重叠的点
+    S.setComp({ items: items.filter((x) => x.id !== rec.id && x.date !== rec.date).concat(rec).sort((a, b) => (a.date < b.date ? -1 : 1)) });
+    S.closeSheet();
+    S.toast('体测已保存');
+  };
+  const remove = () => { S.setComp({ items: items.filter((x) => x.id !== edit.id) }); S.closeSheet(); S.toast('已删除'); };
+  return html`<div class="stack">
+    <p class="note">把 InBody 报告上的数字填在这里。体重、体脂率和骨骼肌必填，其余没有就留空。</p>
+    <div class="grid-2">
+      <${Field} id="c-date" label="测量日期" type="date" value=${f.date} onInput=${set('date')}/>
+      ${COMP_FIELDS.map(([k, label]) => html`<${Field} id=${'c-' + k} label=${label} inputmode="decimal" value=${f[k]} onInput=${set(k)}/>`)}
+    </div>
+    <details><summary>分段肌肉（可不填）</summary>
+      <div class="stack-s">
+        <p class="small muted">填报告 Segmental Lean Analysis 里每个部位的百分比。</p>
+        <div class="grid-2">${COMP_SEG.map(([k, n]) => html`<${Field} id=${'c-' + k} label=${n + '（%）'} inputmode="decimal" value=${f[k]} onInput=${set(k)}/>`)}</div>
+      </div>
+    </details>
+    <div class="row between"><button type="button" class="btn" onClick=${save}>保存</button>${edit ? html`<${Confirm} label="删除这条记录" sure="永久删除？再点一次" onYes=${remove}/>` : null}</div>
+  </div>`;
+}
+
+function CompChart({ title, items, k, unit, target }) {
+  const [ref, W] = useWidth();
+  const [hi, setHi] = useState(null);
+  const pts = items.filter((x) => x[k] != null);
+  let chart = null;
+  if (W > 0 && pts.length >= 2) {
+    const H = 150, m = { l: 34, r: 42, t: 12, b: 24 };
+    const first = pts[0].date, last = pts[pts.length - 1].date, span = Math.max(1, E.diff(last, first));
+    const vals = pts.map((x) => x[k]).concat(target ? [target.v] : []);
+    const ticks = niceTicks(Math.min(...vals) - 0.1, Math.max(...vals) + 0.1, 3);
+    const y0 = ticks[0], y1 = ticks[ticks.length - 1];
+    const X = (d) => m.l + (E.diff(d, first) / span) * (W - m.l - m.r);
+    const Y = (v) => m.t + ((y1 - v) / (y1 - y0)) * (H - m.t - m.b);
+    const end = pts[pts.length - 1];
+    const cur = hi != null && pts[hi] ? pts[hi] : null;
+    const pick = (e) => {
+      const x = e.clientX - e.currentTarget.getBoundingClientRect().left;
+      let best = 0, bd = Infinity;
+      pts.forEach((p, i) => { const dd = Math.abs(X(p.date) - x); if (dd < bd) { bd = dd; best = i; } });
+      setHi(best);
+    };
+    const onKey = (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      setHi(E.clamp((hi == null ? pts.length - 1 : hi) + (e.key === 'ArrowLeft' ? -1 : 1), 0, pts.length - 1));
+    };
+    chart = html`<div class="chart" tabindex="0" role="img" aria-label=${`${title}趋势，最新 ${n1(end[k])} ${unit}`} onKeyDown=${onKey} onFocus=${() => setHi(pts.length - 1)} onBlur=${() => setHi(null)}>
+      <svg viewBox=${`0 0 ${W} ${H}`} onPointerMove=${pick} onPointerDown=${pick} onPointerLeave=${() => setHi(null)}>
+        ${ticks.map((v) => html`<g><line class="grid-line" x1=${m.l} x2=${W - m.r} y1=${Y(v)} y2=${Y(v)}/><text x=${m.l - 6} y=${Y(v) + 4} text-anchor="end">${v}</text></g>`)}
+        <text x=${m.l} y=${H - 6}>${E.fmtShort(first)}</text>
+        <text x=${X(last)} y=${H - 6} text-anchor="end">${E.fmtShort(last)}</text>
+        ${target ? html`<g><line x1=${m.l} x2=${W - m.r} y1=${Y(target.v)} y2=${Y(target.v)} stroke="var(--good)" stroke-width="1"/><text x=${m.l + 4} y=${Y(target.v) - 5}>${target.l}</text></g>` : null}
+        <path d=${pts.map((x, i) => `${i ? 'L' : 'M'}${X(x.date).toFixed(1)} ${Y(x[k]).toFixed(1)}`).join('')} fill="none" stroke="var(--rouge)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+        ${pts.map((x) => html`<circle cx=${X(x.date)} cy=${Y(x[k])} r="4.5" fill="var(--rouge)" stroke="var(--surface)" stroke-width="2"/>`)}
+        <text x=${X(end.date) + 10} y=${Y(end[k]) + 4}>${n1(end[k])}</text>
+        ${cur ? html`<line class="grid-line" x1=${X(cur.date)} x2=${X(cur.date)} y1=${m.t} y2=${H - m.b}/>` : null}
+      </svg>
+      ${cur ? html`<div class="tip" style=${`left:${E.clamp(X(cur.date) - 48, 0, Math.max(0, W - 110))}px`}><span class="small">${E.fmtShort(cur.date)}</span> <b>${n1(cur[k])}</b> ${unit}</div>` : null}
+    </div>`;
+  }
+  return html`<div ref=${ref} class="stack-s"><span class="label">${title}</span>${chart}</div>`;
+}
+
+function CompSection({ pl, p }) {
+  const items = S.state.comp.items, today = E.today();
+  const open = (edit) => S.openSheet(edit ? '修改体测' : '记录体测', () => html`<${CompForm} edit=${edit}/>`);
+  const head = html`<button type="button" class="btn ghost sm" onClick=${() => open(null)}>记录体测</button>`;
+  const last = items[items.length - 1], prev = items[items.length - 2];
+  if (!last) {
+    return html`<${Sec} title="体成分" right=${head}><div class="empty"><span>还没有体测记录</span><span class="small">做完 InBody 后记在这里，就能看到体脂率和肌肉的变化。</span></div><//>`;
+  }
+  const rg = E.compRange(p.sex);
+  const level = (v, [a, b]) => (v > b ? '偏高' : v < a ? '偏低' : '正常');
+  const delta = (k, d) => (prev && prev[k] != null && last[k] != null ? ` · 较上次 ${last[k] - prev[k] > 0 ? '+' : ''}${(last[k] - prev[k]).toFixed(d)}` : '');
+  const pair = (a, b) => (a === b ? String(a) : `${a}–${b}`);
+  const next = pl.mode === 'lose' || pl.mode === 'recomp' ? E.compNext(last, p.sex) : null;
+  const aims = [];
+  if (next) {
+    if (next.pbf) aims.push(`体脂率 ${pair(...next.pbf)}%`);
+    aims.push(`骨骼肌约 ${n1(next.smm)} kg`);
+    if (next.visceral) aims.push(`内脏脂肪 ${pair(...next.visceral)}`);
+  }
+  const when = next ? (next.date <= today ? '现在可以复测了。' : `建议 ${E.fmtDate(next.date).split(' ')[0]}前后复测。`) : '';
+  const aimText = next ? `目标：${aims.join('，')}。同一台机器、相近时间测，结果才好比较。` : '';
+  return html`<${Sec} title="体成分" right=${head}>
+    <div class="small muted tn">最近一次 ${last.date}${last.time ? ' ' + last.time : ''}${last.source ? ' · ' + last.source : ''}</div>
+    <div class="kv">
+      <div><span class="v">${n1(last.pbf)}<small>%</small></span><span class="k">体脂率 · ${level(last.pbf, rg.pbf)}（正常 ${rg.pbf[0]}–${rg.pbf[1]}）${delta('pbf', 1)}</span></div>
+      <div><span class="v">${n1(last.smm)}<small>kg</small></span><span class="k">骨骼肌${delta('smm', 1)}</span></div>
+      ${last.visceral != null ? html`<div><span class="v">${last.visceral}</span><span class="k">内脏脂肪等级 · ${level(last.visceral, rg.visceral)}（正常 1–9）${delta('visceral', 0)}</span></div>` : null}
+      ${last.whr != null ? html`<div><span class="v">${last.whr.toFixed(2)}</span><span class="k">腰臀比 · ${level(last.whr, rg.whr)}（正常 ${rg.whr[0]}–${rg.whr[1]}）${delta('whr', 2)}</span></div>` : null}
+    </div>
+    ${items.length >= 2 ? html`<div class="grid-2" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+      <${CompChart} title="体脂率（%）" k="pbf" unit="%" items=${items} target=${next && next.pbf ? { v: (next.pbf[0] + next.pbf[1]) / 2, l: `下次目标 ${pair(...next.pbf)}` } : null}/>
+      <${CompChart} title="骨骼肌（kg）" k="smm" unit="kg" items=${items} target=${next ? { v: next.smm, l: `下次目标 ${n1(next.smm)}` } : null}/>
+    </div>` : null}
+    <p class="note">${items.length < 2 ? '再测一次后，这里会显示体脂率和骨骼肌的趋势。' : ''}${when}${aimText}</p>
+    <div>
+      ${last.lean ? html`<details><summary>分段肌肉</summary><div class="stack-s">
+        ${COMP_SEG.filter(([k]) => last.lean[k] != null).map(([k, n]) => html`<div class="bar-row"><span>${n}</span><${Meter} pct=${last.lean[k]}/><span class="v">${Math.round(last.lean[k])}%</span></div>`)}
+        <p class="small muted">占标准肌肉量的百分比。手臂 80% 以上、躯干和腿 90% 以上算正常。</p>
+      </div></details>` : null}
+      <details><summary>全部记录</summary><div class="list">${items.slice().reverse().map((r) => html`<div class="li" key=${r.id}><div><div class="tn">${r.date}</div><div class="d tn">${n1(r.weight)} kg · 体脂 ${n1(r.pbf)}% · 骨骼肌 ${n1(r.smm)} kg${r.visceral != null ? ` · 内脏 ${r.visceral}` : ''}</div></div><button type="button" class="btn ghost sm" onClick=${() => open(r)}>修改</button></div>`)}</div></details>
+    </div>
+  <//>`;
+}
+
+function Body() {
+  const st = S.state, p = st.profile, date = E.today(), ctx = ctxOf(date), pl = ctx.plan;
+  const [range, setRange] = useState(90);
+  const [table, setTable] = useState(false);
+  if (!pl.showNumbers) {
+    return html`<header><h1>身材</h1></header><${Sec} first=${true}><${Notice} s="warn" title="这一页已隐藏">按你的健康情况，体重、围度和对比照都不显示。现在更重要的是吃够、睡好和日常习惯。你可以在设置里修改。<//><//>`;
+  }
+  const all = E.weightSeries(st.days);
+  const series = range === 'all' ? all : all.filter((x) => E.diff(date, x.date) < range);
+  const last = all.length ? all[all.length - 1] : null;
+  const pc = E.pace(all, pl, E.bodyImproving(st.days, st.comp.items, date));
+  const et = last ? E.eta(last.avg, pl.goal, pc, pl, date) : null;
+  const statusMap = {
+    good: ['good', '节奏正常', null],
+    fast: ['crit', '掉得偏快', '每周超过体重的 1%。建议每天加 150–200 千卡，优先加蛋白质和主食。前两周掉得快通常是水分，可以再观察一下。'],
+    plateau: ['warn', '进入平台期', '连续 3 周几乎没变。先核对份量有没有低估，再每天多走 1500–2000 步。不要继续往下砍热量。'],
+    recomp: ['good', '体型在变好', '体重这几周没怎么动，但腰围或体脂在下降，说明减脂和增肌在同时发生。继续现在的计划，不用减热量。'],
+    up: ['warn', '略有回升', '先看周末和外卖，也可能是经期或训练后的水分。再观察一周，趋势才算数。'],
+    down: ['warn', '体重在下降', '你现在的目标是增重，下降说明吃得还不够，可以每天加一份主食或蛋白质。'],
+    none: ['info', '数据还不够', '连续记录两周左右，程序才能判断节奏。'],
+  };
+  const stat = statusMap[pc.status];
+  const waist = measureSeries(st.days, 'waist');
+  const curWaist = waist.length ? waist[waist.length - 1].v : null;
+  const hip = measureSeries(st.days, 'hip');
+  const wb = curWaist != null ? E.waistBand(curWaist, p.sex) : null;
+  const toGoal = last && pl.goal != null ? Math.max(0, last.avg - pl.goal) : null;
+
+  return html`
+    <header class="stack-s"><h1>身材</h1></header>
+    <div class="cols">
+      <div class="span-2">
+        <${Sec} first=${true}>
+          <div class="row between" style="align-items:flex-end">
+            <div class="stack-s">
+              <span class="label">当前 7 日均值</span>
+              <div class="big-fig">${last ? n1(last.avg) : n1(p.weight)}<small>kg</small></div>
+            </div>
+            <${Pill} s=${stat[0]}>${stat[1]}<//>
+          </div>
+          ${stat[2] ? html`<p class="note">${stat[2]}</p>` : null}
+          <div class="row between">
+            <${Seg} label="时间范围" value=${range} onChange=${setRange} options=${[{ v: 30, l: '30 天' }, { v: 90, l: '90 天' }, { v: 'all', l: '全部' }]}/>
+            ${series.length >= 2 ? html`<button type="button" class="link" onClick=${() => setTable(!table)}>${table ? '看图表' : '看表格'}</button>` : null}
+          </div>
+          ${table && series.length >= 2 ? html`<div class="table-wrap"><table><thead><tr><th>日期</th><th>当天</th><th>7 日均值</th></tr></thead><tbody>${series.slice().reverse().map((s) => html`<tr><td>${s.date}</td><td>${n1(s.w)}</td><td>${n1(s.avg)}</td></tr>`)}</tbody></table></div>` : html`<${WeightChart} series=${series} goal=${pl.goal}/>`}
+          <div class="kv">
+            ${toGoal != null ? html`<div><span class="v">${n1(toGoal)}<small>kg</small></span><span class="k">距离目标 ${n1(pl.goal)} kg</span></div>` : null}
+            <div><span class="v">${pc.perWeek != null ? (pc.perWeek > 0 ? '+' : '') + pc.perWeek.toFixed(2) : '—'}<small>kg/周</small></span><span class="k">最近两周的速度</span></div>
+            ${et ? html`<div><span class="v">${et.weeks}<small>周</small></span><span class="k">体重${et.basis === 'trend' ? '按现在的速度' : '按计划速度'}约 ${E.fmtShort(et.date)} 到目标</span></div>` : null}
+            <div><span class="v">${pl.bmi.toFixed(1)}</span><span class="k">BMI · ${pl.band.l}</span></div>
+          </div>
+        <//>
+      </div>
+      <div class="span-2"><${CompSection} pl=${pl} p=${p}/></div>
+      <div>
+        <${Sec} title="围度" note="体重不动的时候，腰围和照片常常已经在变。" right=${html`<button type="button" class="btn ghost sm" onClick=${() => S.openSheet('记录围度', () => html`<${MeasureForm} date=${date}/>`)}>记录</button>`}>
+          ${curWaist != null ? html`<div class="row"><${Pill} s=${wb.s}>腰围 ${curWaist} cm · ${wb.l}<//>${hip.length ? html`<span class="small muted tn">腰臀比 ${(curWaist / hip[hip.length - 1].v).toFixed(2)}</span>` : null}</div>` : null}
+          ${MEAS.some(([k]) => measureSeries(st.days, k).length) ? html`<div class="list">${MEAS.map(([k, n]) => {
+            const s = measureSeries(st.days, k);
+            if (!s.length) return null;
+            const change = s[s.length - 1].v - s[0].v;
+            return html`<div class="li"><div><div>${n}</div><div class="d tn">${s[s.length - 1].v} cm${s.length > 1 ? ` · 较首次 ${change > 0 ? '+' : ''}${change.toFixed(1)}` : ''}</div></div><${Spark} vals=${s.map((x) => x.v)}/></div>`;
+          })}</div>` : html`<div class="empty"><span>还没有围度记录</span><span class="small">每两周量一次，这里会显示变化。</span></div>`}
+        <//>
+      </div>
+      <div>
+        <${Sec} title="对比照片"><${Photos}/><//>
+      </div>
+    </div>`;
+}
+
+</script>
+<script>
+/* 气色簿 · 护肤和医美。 */
+
+const SCALES = [
+  ['acne', '长痘', ['没有', '1–2 颗', '3–5 颗', '更多']],
+  ['oil', '出油', ['不油', '微油', '偏油', '很油']],
+  ['red', '泛红', ['没有', '轻微', '明显', '严重']],
+  ['puffy', '水肿', ['没有', '轻微', '明显', '严重']],
+];
+
+function SkinDiary({ date }) {
+  const d = S.day(date), skin = d.skin || {};
+  const set = (k, v) => { const next = { ...skin }; if (next[k] === v) delete next[k]; else next[k] = v; S.patchDay(date, { skin: next }); };
+  return html`<div class="stack-s">${SCALES.map(([k, n, opts]) => html`<div class="scale"><span>${n}</span>
+    <div class="seg" role="radiogroup" aria-label=${n}>${opts.map((o, i) => html`<button type="button" role="radio" aria-checked=${skin[k] === i ? 'true' : 'false'} class=${skin[k] === i ? 'on' : ''} onClick=${() => set(k, i)}>${o}</button>`)}</div>
+  </div>`)}</div>`;
+}
+
+function SkinHeat({ end }) {
+  const days = S.state.days;
+  const [hit, setHit] = useState(null);
+  const dates = Array.from({ length: 28 }, (_, i) => E.addDays(end, i - 27));
+  const any = dates.some((d) => days[d] && days[d].skin && Object.keys(days[d].skin).length);
+  if (!any) return html`<div class="empty"><span>还没有皮肤记录</span><span class="small">每天花 10 秒选一下，这里会显示最近 4 周的变化。</span></div>`;
+  const onHit = (e) => {
+    const c = e.target.dataset && e.target.dataset.c;
+    if (c !== undefined) setHit({ r: +e.target.dataset.r, c: +c });
+  };
+  const readout = hit ? (() => {
+    const [k, n, opts] = SCALES[hit.r], dt = dates[hit.c], s = days[dt] && days[dt].skin;
+    return `${E.fmtShort(dt)} · ${n} · ${s && s[k] != null ? opts[s[k]] : '没有记录'}`;
+  })() : '点格子查看当天记录';
+  return html`<div class="stack-s">
+    <div class="heat" onPointerOver=${onHit} onPointerDown=${onHit}>
+      ${SCALES.map(([k, n], r) => html`<span>${n}</span><div class="heat-row">${dates.map((dt, c) => {
+        const s = days[dt] && days[dt].skin;
+        const v = s ? s[k] : undefined;
+        const cls = v == null ? 'none' : v === 0 ? '' : 'l' + v;
+        return html`<i data-r=${r} data-c=${c} class=${cls + (hit && hit.r === r && hit.c === c ? ' hit' : '')}></i>`;
+      })}</div>`)}
+    </div>
+    <div class="row between small muted"><span class="tn">${readout}</span>
+      <span class="row" style="gap:4px;flex-wrap:nowrap">轻<i style="width:12px;height:12px;border-radius:2px;background:var(--surface-2);display:block"></i><i style="width:12px;height:12px;border-radius:2px;background:var(--heat-1);display:block"></i><i style="width:12px;height:12px;border-radius:2px;background:var(--heat-2);display:block"></i><i style="width:12px;height:12px;border-radius:2px;background:var(--heat-3);display:block"></i>重</span>
+    </div>
+    <details><summary>看表格</summary><div class="table-wrap"><table><thead><tr><th>日期</th>${SCALES.map(([, n]) => html`<th>${n}</th>`)}</tr></thead><tbody>${dates.slice().reverse().filter((dt) => days[dt] && days[dt].skin).map((dt) => html`<tr><td>${E.fmtShort(dt)}</td>${SCALES.map(([k, , o]) => html`<td>${days[dt].skin[k] != null ? o[days[dt].skin[k]] : '—'}</td>`)}</tr>`)}</tbody></table></div></details>
+  </div>`;
+}
+
+function Skin() {
+  const date = UI.date, st = S.state, p = st.profile, d = S.day(date), ctx = ctxOf(date), sk = ctx.skin;
+  const th = E.things(d, ctx.plan, p);
+  const isDone = (k) => th.find((x) => x.k === k).done;
+  const flip = (k) => S.patchDay(date, { t: { ...(d.t || {}), [k]: !isDone(k) } });
+  const tr = E.triggers(st.days);
+  const term = E.solarTerm(date);
+  const preg = !!(p.safety && p.safety.preg);
+  return html`
+    <header class="stack-s"><h1>护肤</h1><${DateBar}/></header>
+    <div class="cols">
+      <div class="span-2">
+        <${Sec} first=${true} title=${sk.mode === 'normal' ? `今晚是${sk.night.n}` : '今天用修护方案'} right=${html`<${Pill} s=${sk.mode === 'normal' ? 'info' : 'warn'}>${sk.mode === 'recovery' ? '术后恢复' : sk.mode === 'barrier' ? '屏障预警' : sk.stageName}<//>`}>
+          ${sk.reason ? html`<${Notice} s="warn">${sk.reason}<//>` : html`<p class="note">${sk.stageNote}</p>`}
+          ${sk.mode === 'normal' && sk.stage > 1 ? html`<div class="nights" aria-label="四晚轮换">${sk.cycle.map((n, i) => html`<div class=${i === sk.idx ? 'on' : ''}>第 ${i + 1} 晚<br/>${n.n.replace('夜', '')}</div>`)}</div>` : null}
+          ${preg ? html`<${Notice} s="crit">孕期、备孕和哺乳期已去掉 A 醇和水杨酸。具体用什么请和医生确认。<//>` : null}
+          <div class="grid-2" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+            <div class="stack">
+              <div class="row between"><h3>早上</h3><${Tick} on=${isDone('am')} label="早护防晒完成" onClick=${() => flip('am')}/></div>
+              <ol class="routine">${sk.am.map((x) => html`<li><div>${x.t}<span>${x.d}</span></div></li>`)}</ol>
+            </div>
+            <div class="stack">
+              <div class="row between"><h3>晚上</h3><${Tick} on=${isDone('pm')} label="晚护完成" onClick=${() => flip('pm')}/></div>
+              <ol class="routine">${sk.pm.map((x) => html`<li><div>${x.t}<span>${x.d}</span></div></li>`)}</ol>
+              ${sk.mode === 'normal' ? html`<p class="small muted">${sk.night.tip}</p>` : null}
+            </div>
+          </div>
+          <p class="small muted">${term.name}时节：${term.tip}</p>
+        <//>
+      </div>
+      <div>
+        <${Sec} title="皮肤日记" note="每天选一下。连续两天泛红明显，程序会自动把活性换成修护。"><${SkinDiary} date=${date}/><//>
+      </div>
+      <div>
+        <${Sec} title="最近 4 周"><${SkinHeat} end=${date}/>
+          ${tr.length ? html`<div class="stack-s">${tr.map((x) => html`<${Notice}>${x.cause}后的第二天，${x.metric}平均高 ${x.delta} 分（${x.n} 次记录）。<//>`)}<p class="small muted">这是相关性，不代表一定是这个原因，可以自己试着调整看看。</p></div>` : null}
+        <//>
+      </div>
+      <div class="span-2">
+        <${Sec} title="脸型和水肿">
+          <div>
+            <details><summary>早起水肿怎么办</summary><p class="note">前一晚少盐少酒，睡够 7 小时，枕头略垫高。早上用冷水洗脸或冷敷 1–2 分钟。长期严重水肿或单侧突然肿胀要去医院。</p></details>
+            <details><summary>想要下颌线</summary><p class="note">脂肪不能局部减少，下颌线主要靠整体减脂。头前伸会让下颌线变模糊，体态练习里的下巴后缩有帮助。少嚼口香糖，咬肌会轻松一些。</p></details>
+            <details><summary>面部按摩和面部瑜伽</summary><p class="note">目前只有小规模研究提示有轻微改善，证据有限。想做就用足够的润滑、轻力度，长痘发炎的时候不要按。</p></details>
+            <details><summary>成分怎么搭</summary><p class="note">一次只加一种新产品，观察 2 周。A 醇和酸类不要同一晚用。VC 放早上，防晒每天都涂，阴天和靠窗的室内也要。所有提亮和抗老的效果，都依赖防晒留住。</p></details>
+            <details><summary>什么时候该看皮肤科</summary><p class="note">痘痘红肿疼痛、有结节或囊肿，或连续 3 个月没有好转；用护肤品后持续灼痛；疑似黄褐斑；痣的形状或颜色变了。这些情况不要自己处理。</p></details>
+          </div>
+        <//>
+      </div>
+    </div>`;
+}
+
+// ---------- 医美 ----------
+const REG = {
+  device: '这类产品按医疗器械管理，核对注册证号（国械注准 / 国械注进）。',
+  drug: '肉毒素按药品管理，核对药品批准文号或进口药品注册证，批次可查批签发。',
+  equip: '设备应是注册过的医疗器械，让机构出示注册证，治疗头当面拆封。',
+};
+
+function MedForm({ edit, preset }) {
+  const pre = preset || {};
+  const blank = { id: newId(), pid: pre.pid || 'ipl', name: pre.name || '', date: E.today(), site: '全脸', clinic: pre.clinic || '', doctor: '', product: '', dose: '', price: pre.price ? String(pre.price) : '', rating: 0, note: '' };
+  const [f, setF] = useState(() => (edit ? { ...edit, price: edit.price != null ? String(edit.price) : '' } : blank));
+  const [nextTouched, setTouched] = useState(!!(edit && edit.next));
+  const [next, setNext] = useState(edit ? edit.next || '' : '');
+  const set = (k) => (v) => setF({ ...f, [k]: v });
+  const c = f.pid === 'custom' ? null : QS.MED.find((m) => m.id === f.pid);
+  const suggested = c && c.interval && f.date ? E.addDays(f.date, c.interval) : '';
+  const nextV = nextTouched ? next : suggested;
+  const save = () => {
+    if (!f.date) { S.toast('请选择日期', 'crit'); return; }
+    if (f.date > E.today()) { S.toast('这里记录已经做过的项目，将来的安排放到想做清单。', 'crit'); return; }
+    if (f.pid === 'custom' && !f.name.trim()) { S.toast('请填写项目名称', 'crit'); return; }
+    const rec = { ...f, name: f.pid === 'custom' ? f.name.trim() : '', price: f.price.trim() === '' ? null : Math.max(0, +f.price || 0), next: nextV || null };
+    const items = S.state.med.items.filter((x) => x.id !== rec.id).concat(rec).sort((a, b) => (a.date < b.date ? 1 : -1));
+    S.setMed({ items, wishes: S.state.med.wishes.filter((x) => x.id !== pre.wishId) });
+    S.closeSheet();
+    S.toast('已保存');
+  };
+  const remove = () => {
+    S.setMed({ ...S.state.med, items: S.state.med.items.filter((x) => x.id !== f.id) });
+    S.closeSheet();
+    S.toast('已删除');
+  };
+  return html`<div class="stack">
+    <${Select} id="med-pid" label="项目" value=${f.pid} onChange=${set('pid')}>${QS.MED.map((m) => html`<option value=${m.id}>${m.n}</option>`)}<option value="custom">其他项目</option><//>
+    ${f.pid === 'custom' ? html`<${Field} id="med-name" label="项目名称" value=${f.name} onInput=${set('name')}/>` : null}
+    <div class="grid-2">
+      <${Field} id="med-date" label="做的日期" type="date" value=${f.date} onInput=${set('date')}/>
+      <${Field} id="med-site" label="部位" value=${f.site} onInput=${set('site')}/>
+      <${Field} id="med-clinic" label="机构" value=${f.clinic} onInput=${set('clinic')}/>
+      <${Field} id="med-doctor" label="医生" value=${f.doctor} onInput=${set('doctor')}/>
+      <${Field} id="med-product" label="产品和批号" value=${f.product} onInput=${set('product')}/>
+      <${Field} id="med-dose" label="用量或参数" value=${f.dose} onInput=${set('dose')}/>
+      <${Field} id="med-price" label="费用（元）" inputmode="numeric" value=${f.price} onInput=${set('price')}/>
+      <${Field} id="med-next" label="下次提醒日期" type="date" value=${nextV} onInput=${(v) => { setTouched(true); setNext(v); }}/>
+    </div>
+    ${c ? html`<p class="small muted">${c.intervalText}。</p>` : null}
+    <div class="stack-s"><span class="label">满意度</span><${Seg} label="满意度" value=${f.rating} onChange=${set('rating')} options=${[{ v: 1, l: '不满意' }, { v: 2, l: '一般' }, { v: 3, l: '满意' }, { v: 4, l: '很满意' }]}/></div>
+    <${Area} id="med-note" label="备注" value=${f.note} onInput=${set('note')} placeholder="术后反应、医生叮嘱"/>
+    <div class="row between"><button type="button" class="btn" onClick=${save}>保存</button>${edit ? html`<${Confirm} label="删除这条记录" sure="永久删除？再点一次" onYes=${remove}/>` : null}</div>
+  </div>`;
+}
+
+function WishForm() {
+  const [f, setF] = useState({ pid: 'ipl', name: '', clinic: '', price: '', note: '' });
+  const set = (k) => (v) => setF({ ...f, [k]: v });
+  const save = () => {
+    if (f.pid === 'custom' && !f.name.trim()) { S.toast('请填写项目名称', 'crit'); return; }
+    S.setMed({ ...S.state.med, wishes: [...S.state.med.wishes, { id: newId(), ...f, name: f.name.trim(), added: E.today(), checks: {} }] });
+    S.closeSheet();
+  };
+  return html`<div class="stack">
+    <${Select} id="wish-pid" label="想做的项目" value=${f.pid} onChange=${set('pid')}>${QS.MED.map((m) => html`<option value=${m.id}>${m.n}</option>`)}<option value="custom">其他项目</option><//>
+    ${f.pid === 'custom' ? html`<${Field} id="wish-name" label="项目名称" value=${f.name} onInput=${set('name')}/>` : null}
+    <div class="grid-2">
+      <${Field} id="wish-clinic" label="考虑的机构" value=${f.clinic} onInput=${set('clinic')}/>
+      <${Field} id="wish-price" label="报价（元）" inputmode="numeric" value=${f.price} onInput=${set('price')}/>
+    </div>
+    <${Area} id="wish-note" label="想解决什么问题" value=${f.note} onInput=${set('note')}/>
+    <div><button type="button" class="btn" onClick=${save}>加入清单</button></div>
+  </div>`;
+}
+
+function WishCard({ w }) {
+  const c = w.pid === 'custom' ? null : QS.MED.find((m) => m.id === w.pid);
+  const name = c ? c.n : w.name;
+  const n = QS.MED_CHECKS.filter((x) => w.checks[x.k]).length;
+  const days = E.diff(E.today(), w.added);
+  const update = (patch) => S.setMed({ ...S.state.med, wishes: S.state.med.wishes.map((x) => (x.id === w.id ? { ...x, ...patch } : x)) });
+  const remove = () => S.setMed({ ...S.state.med, wishes: S.state.med.wishes.filter((x) => x.id !== w.id) });
+  return html`<details>
+    <summary><span>${name}<span class="small muted" style="font-weight:400"> · 核对 ${n}/${QS.MED_CHECKS.length} · 已考虑 ${days} 天</span></span></summary>
+    <div class="stack-s">
+      ${w.clinic || w.price ? html`<p class="small muted">${w.clinic}${w.clinic && w.price ? ' · ' : ''}${w.price ? `报价 ${w.price} 元` : ''}</p>` : null}
+      ${w.note ? html`<p class="small">${w.note}</p>` : null}
+      ${days < 7 ? html`<${Notice} s="info">建议至少考虑 7 天再决定，还有 ${7 - days} 天。价格活动不是决定的理由。<//>` : null}
+      <div>${QS.MED_CHECKS.map((x) => html`<label class="check"><input id=${`chk-${w.id}-${x.k}`} type="checkbox" checked=${!!w.checks[x.k]} onChange=${(e) => update({ checks: { ...w.checks, [x.k]: e.target.checked } })}/><span>${x.t}<br/><span class="small muted">${x.h}</span></span></label>`)}</div>
+      ${c ? html`<p class="small muted">${REG[c.reg]}</p>` : null}
+      <div class="row between"><button type="button" class="btn ghost sm" onClick=${() => S.openSheet('记录已做项目', () => html`<${MedForm} preset=${{ pid: w.pid, name: w.name, clinic: w.clinic, price: w.price, wishId: w.id }}/>`)}>已做，转成记录</button><${Confirm} label="移出清单" sure="确定移出？再点一次" onYes=${remove}/></div>
+    </div>
+  </details>`;
+}
+
+function RecoveryPanel({ r }) {
+  const [a, b] = r.c.phases;
+  const cells = Array.from({ length: 15 }, (_, i) => i);
+  const bg = (i) => (i <= a ? 'var(--heat-3)' : i <= b ? 'var(--heat-2)' : 'var(--heat-1)');
+  return html`<div class="stack">
+    <div class="row between"><h3>${r.c.n} · 第 ${r.day} 天</h3><${Pill} s=${r.phase === '稳定期' ? 'good' : 'warn'}>${r.phase}<//></div>
+    <div style="display:grid;grid-template-columns:repeat(15,minmax(0,1fr));gap:2px" role="img" aria-label=${`14 天修复周期，今天第 ${r.day} 天，处于${r.phase}`}>
+      ${cells.map((i) => html`<div style=${`height:${i === r.day ? 20 : 12}px;border-radius:2px;align-self:end;background:${bg(i)};${i === r.day ? 'outline:2px solid var(--ink);' : ''}`}></div>`)}
+    </div>
+    <div class="legend"><span><i style="background:var(--heat-3);height:8px"></i>急性期</span><span><i style="background:var(--heat-2);height:8px"></i>恢复期</span><span><i style="background:var(--heat-1);height:8px"></i>稳定期</span></div>
+    ${r.pause ? html`<p class="note">A 醇和酸类暂停到 ${E.fmtShort(r.resume)}，今日护肤已自动换成修护方案。</p>` : null}
+    ${r.c.care && r.c.care.length ? html`<ol class="routine">${r.c.care.map((x) => html`<li><div>${x}</div></li>`)}</ol>` : null}
+    <p class="small muted">周期是一般参考，医生的术后医嘱优先。出现剧痛、皮肤发白发紫、视力变化或持续加重，立即联系医生或去医院。</p>
+  </div>`;
+}
+
+function Med() {
+  const st = S.state, p = st.profile, date = E.today(), ctx = ctxOf(date), pl = ctx.plan;
+  const { items, wishes } = st.med;
+  const year = date.slice(0, 4);
+  const spent = items.filter((x) => x.date.startsWith(year)).reduce((s, x) => s + (x.price || 0), 0);
+  const budget = p.medBudget || null;
+  const dues = E.dues(items, date).filter((x) => x.left <= 60).slice(0, 5);
+  const preg = !!(p.safety && p.safety.preg), minor = !!(p.safety && p.safety.under18);
+  const concerns = (p.concerns || []).map((c) => (c === 'puffy' ? 'contour' : c));
+  const losing = pl.mode === 'lose';
+  const [cat, setCat] = useState('all');
+  const cats = ['注射', '光电', '焕肤', '皮肤护理', '手术类'];
+  const shown = QS.MED.filter((m) => cat === 'all' || m.cat === cat);
+  return html`
+    <header class="stack-s"><h1>医美</h1></header>
+    ${preg || minor ? html`<${Sec} first=${true}><${Notice} s="crit" title=${preg ? '孕期、备孕和哺乳期建议暂缓' : '未满 18 岁不建议做医美'}>${preg ? '注射和光电类项目都请先和产科医生沟通。' : '皮肤问题请和家长一起看皮肤科。'}<//><//>` : null}
+    <div class="cols">
+      <div>
+        <${Sec} first=${!(preg || minor)} title="概览" right=${html`<button type="button" class="btn sm" onClick=${() => S.openSheet('记录已做项目', () => html`<${MedForm}/>`)}>记录项目</button>`}>
+          <div class="kv">
+            <div><span class="v">${n0(spent)}<small>元</small></span><span class="k">${year} 年已花</span></div>
+            <div><span class="v">${items.length}<small>次</small></span><span class="k">累计记录</span></div>
+            ${budget ? html`<div><span class="v">${n0(Math.max(0, budget - spent))}<small>元</small></span><span class="k">预算剩余</span></div>` : null}
+          </div>
+          ${budget ? html`<${Meter} pct=${(spent / budget) * 100} over=${spent > budget}/>` : html`<p class="small muted">可以在设置里填年度预算，这里会显示剩余。</p>`}
+          ${losing ? html`<${Notice} s="info">你正在减重。填充、线雕和超声类项目会受脸部脂肪变化影响，等体重稳定后再评估更稳妥。<//>` : null}
+        <//>
+        ${ctx.recovery ? html`<${Sec} title="恢复期"><${RecoveryPanel} r=${ctx.recovery}/><//>` : null}
+        ${dues.length ? html`<${Sec} title="快到时间的项目">
+          <div class="list">${dues.map((x) => html`<div class="li"><div><div>${x.c.n}</div><div class="d tn">上次 ${x.r.date}</div></div><${Pill} s=${x.left < 0 ? 'warn' : 'info'}>${x.left < 0 ? `已过 ${-x.left} 天` : x.left === 0 ? '今天' : `${x.left} 天后`}<//></div>`)}</div>
+        <//>` : null}
+        <${Sec} title="项目记录">
+          ${items.length ? html`<div class="list">${items.map((r) => { const c = E.medInfo(r); return html`<div class="li" key=${r.id}><div><div>${c.n}</div><div class="d tn">${r.date}${r.clinic ? ' · ' + r.clinic : ''}${r.price != null ? ` · ${n0(r.price)} 元` : ''}</div></div><button type="button" class="btn ghost sm" onClick=${() => S.openSheet('修改记录', () => html`<${MedForm} edit=${r}/>`)}>修改</button></div>`; })}</div>` : html`<div class="empty"><span>还没有项目记录</span><span class="small">记录之后，程序会提醒复做时间，并在恢复期自动调整护肤。</span></div>`}
+        <//>
+      </div>
+      <div>
+        <${Sec} title="想做清单" note="先放进来，核对资质再决定。" right=${html`<button type="button" class="btn ghost sm" onClick=${() => S.openSheet('加入想做清单', () => html`<${WishForm}/>`)}>添加</button>`}>
+          ${wishes.length ? html`<div>${wishes.map((w) => html`<${WishCard} key=${w.id} w=${w}/>`)}</div>` : html`<div class="empty"><span>清单是空的</span><span class="small">添加后会有 6 项安全核对和 7 天冷静期。</span></div>`}
+        <//>
+        <${Sec} title="针对你的问题">
+          <div class="list">${concerns.map((c) => html`<div class="li" style="grid-template-columns:minmax(0,1fr)"><div><div>${QS.MED_ADVICE[c].t}</div><div class="d">${QS.MED_ADVICE[c].d}</div></div></div>`)}</div>
+        <//>
+      </div>
+      <div class="span-2">
+        <${Sec} title="项目参考" note="间隔和恢复期是常见范围，因人和产品而异，以面诊医生的方案为准。">
+          <${Seg} label="项目分类" value=${cat} onChange=${setCat} options=${[{ v: 'all', l: '全部' }, ...cats.map((c) => ({ v: c, l: c }))]}/>
+          <div>${shown.map((m) => html`<details key=${m.id}>
+            <summary><span>${m.n}<span class="small muted" style="font-weight:400"> · ${m.for}</span></span></summary>
+            <div class="stack-s note">
+              <p><b>效果：</b>${m.effect}</p>
+              <p><b>间隔：</b>${m.intervalText}</p>
+              <p><b>恢复：</b>${m.down}</p>
+              <p><b>风险：</b>${m.risk}</p>
+              <p><b>术后：</b>${m.care.join('；')}</p>
+              <p><b>核对：</b>${REG[m.reg]}</p>
+              ${m.weightNote && losing ? html`<p><b>提醒：</b>体重变化会影响效果，减重稳定后再考虑。</p>` : null}
+            </div>
+          </details>`)}</div>
+          <p class="small muted">没有批文的针剂（比如网上常见的“美白针”“溶脂针”）不要打。资质查询：国家卫健委官网（www.nhc.gov.cn）、“医通办”App、国家药监局官网（www.nmpa.gov.cn）数据查询。</p>
+        <//>
+      </div>
+    </div>`;
+}
+
+</script>
+<script>
+/* 气色簿 · 复盘、设置、首次设置和应用外壳。 */
+
+// ---------- 复盘 ----------
+function MonthFlowers({ month, pl, p }) {
+  const days = S.state.days;
+  const [y, m] = month.split('-').map(Number);
+  const firstDay = `${month}-01`;
+  const n = new Date(y, m, 0).getDate();
+  const offset = (E.parse(firstDay).getDay() + 6) % 7;
+  const today = E.today();
+  const open = (dt) => { UI.date = dt; UI.followToday = dt === today; location.hash = 'today'; S.emit(); };
+  return html`<div class="cal">
+    ${['一', '二', '三', '四', '五', '六', '日'].map((w) => html`<div class="wd">${w}</div>`)}
+    ${Array.from({ length: offset }, () => html`<div></div>`)}
+    ${Array.from({ length: n }, (_, i) => {
+      const dt = E.addDays(firstDay, i), d = days[dt];
+      const states = d ? E.things(d, pl, p).map((x) => x.done) : QS.THING_KEYS.map(() => false);
+      const cnt = states.filter(Boolean).length;
+      return html`<button type="button" class=${dt === today ? 'today' : ''} disabled=${dt > today} aria-label=${`${E.fmtShort(dt)}，完成 ${cnt} 件`} onClick=${() => open(dt)}><${Flower} small=${true} states=${states} size=${34}/><span>${i + 1}</span></button>`;
+    })}
+  </div>`;
+}
+
+function WeeklyAI({ wk, summary }) {
+  const st = S.state;
+  const saved = st.reviews.weeks[wk];
+  const [busy, setBusy] = useState(false);
+  const [live, setLive] = useState('');
+  const [err, setErr] = useState('');
+  const ctl = useRef(null);
+  useEffect(() => { setLive(''); setErr(''); }, [wk]);
+  const run = async () => {
+    setBusy(true); setErr(''); setLive('');
+    ctl.current = new AbortController();
+    try {
+      const p = st.profile, pl = ctxOf(E.today()).plan;
+      const payload = { goals: p.goals, concerns: p.concerns, phase: pl.modeName, targets: pl.showNumbers ? { kcal: pl.kcal, protein: pl.protein, water: pl.water, trainDays: p.trainDays } : { water: pl.water, trainDays: p.trainDays }, week: { ...summary, kcal: pl.showNumbers ? summary.kcal : undefined, weight: pl.showNumbers ? summary.weight : undefined, weightDelta: pl.showNumbers ? summary.weightDelta : undefined } };
+      const r = await AI.weekly(payload, ({ text }) => setLive(text), ctl.current.signal);
+      S.setReviews({ weeks: { ...S.state.reviews.weeks, [wk]: { text: r.text, at: E.today() } } });
+      setLive('');
+    } catch (e) {
+      if (e && e.code !== 'cancelled') setErr(AI.errorText(e));
+      if (e && e.text) setLive(e.text);
+    }
+    setBusy(false);
+  };
+  const text = live || (saved && saved.text);
+  if (!st.caps.ai) return html`<p class="note">${window.QS_OFFLINE ? '离线版没有 Claude 写复盘的功能。' : '用 claude.ai 账号打开这个页面后，Claude 可以根据这一周的数据写复盘。'}</p>`;
+  return html`<div class="stack">
+    ${text ? html`<div class="review-text">${text}</div>` : busy ? html`<p class="muted">Claude 正在看你这周的数据，通常要半分钟左右…</p>` : html`<p class="note">Claude 会根据这一周的数据，告诉你做得好的地方、最该调整的一两件事。</p>`}
+    ${err ? html`<p class="err">${err}</p>` : null}
+    <div class="row">
+      ${busy ? html`<button type="button" class="btn ghost" onClick=${() => ctl.current && ctl.current.abort()}>停止</button>` : html`<button type="button" class=${'btn' + (saved ? ' ghost' : '')} disabled=${summary.logged === 0} onClick=${run}>${saved ? '重新写一份' : '让 Claude 写复盘'}</button>`}
+      ${summary.logged === 0 ? html`<span class="small muted">这一周还没有记录</span>` : null}
+    </div>
+  </div>`;
+}
+
+function Coach() {
+  const st = S.state;
+  const [turns, setTurns] = useState([]);
+  const [text, setText] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [live, setLive] = useState('');
+  const [err, setErr] = useState('');
+  const ctl = useRef(null);
+  const send = async (q) => {
+    const msg = (q || text).trim();
+    if (!msg || busy) return;
+    const next = [...turns, { role: 'user', content: msg }];
+    setTurns(next); setText(''); setBusy(true); setErr(''); setLive('');
+    ctl.current = new AbortController();
+    try {
+      const r = await AI.chat(next, aiContext(), ({ text: t }) => setLive(t), ctl.current.signal);
+      setTurns([...next, { role: 'assistant', content: r.text }]);
+    } catch (e) {
+      if (e && e.code !== 'cancelled') setErr(AI.errorText(e));
+      if (e && e.text) setTurns([...next, { role: 'assistant', content: e.text }]);
+    }
+    setLive(''); setBusy(false);
+  };
+  if (!st.caps.ai) return html`<p class="note">${window.QS_OFFLINE ? '离线版不能在这里问 Claude。' : '用 claude.ai 账号打开这个页面后，可以在这里问 Claude。'}</p>`;
+  const ideas = ['我这周最该改什么？', '外卖怎么点更适合我？', '按我的皮肤问题，先解决哪个？'];
+  return html`<div class="stack">
+    ${turns.length || live ? html`<div class="stack-s" style="display:grid">
+      ${turns.map((t) => html`<div class=${'bubble' + (t.role === 'user' ? ' me' : '')}>${t.content}</div>`)}
+      ${live ? html`<div class="bubble">${live}</div>` : null}
+    </div>` : html`<div class="chips">${ideas.map((q) => html`<button type="button" class="chip" onClick=${() => send(q)}>${q}</button>`)}</div>`}
+    ${busy && !live ? html`<p class="small muted">Claude 正在想…</p>` : null}
+    ${err ? html`<p class="err">${err}</p>` : null}
+    <div class="row" style="flex-wrap:nowrap">
+      <input id="coach-q" class="plain" type="text" autocomplete="off" aria-label="问 Claude" placeholder="问问饮食、训练、护肤或医美" value=${text} onInput=${(e) => setText(e.target.value)} onKeyDown=${(e) => { if (e.key === 'Enter' && !e.isComposing) send(); }}/>
+      ${busy ? html`<button type="button" class="btn ghost" onClick=${() => ctl.current && ctl.current.abort()}>停止</button>` : html`<button type="button" class="btn" onClick=${() => send()}>发送</button>`}
+    </div>
+    <p class="small muted">发送时会带上最近 14 天的摘要和最近两次体测，不含昵称、机构和医生姓名，也不发送对比照片。</p>
+  </div>`;
+}
+
+function Review() {
+  const st = S.state, p = st.profile, today = E.today(), ctx = ctxOf(today), pl = ctx.plan;
+  const [wk, setWk] = useState(E.weekStart(today));
+  const [month, setMonth] = useState(today.slice(0, 7));
+  const sum = E.weekSummary(st.days, wk, pl, p);
+  const shiftMonth = (n) => { const [y, m] = month.split('-').map(Number); const d = new Date(y, m - 1 + n, 15); const nm = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; if (nm <= today.slice(0, 7)) setMonth(nm); };
+  const isThis = wk === E.weekStart(today);
+  return html`
+    <header class="stack-s"><h1>复盘</h1></header>
+    <div class="cols">
+      <div>
+        <${Sec} first=${true}>
+          <div class="row between">
+            <div class="row" style="gap:2px">
+              <button type="button" class="icon-btn" aria-label="上一周" onClick=${() => setWk(E.addDays(wk, -7))}>${Icon.left()}</button>
+              <strong class="tn">${E.fmtShort(sum.start)} – ${E.fmtShort(sum.end)}</strong>
+              <button type="button" class="icon-btn" aria-label="下一周" disabled=${isThis} onClick=${() => setWk(E.addDays(wk, 7))}>${Icon.right()}</button>
+            </div>
+            <${Pill} s="info">开花 ${sum.blooms} 天<//>
+          </div>
+          <div class="kv">
+            <div><span class="v">${sum.workouts}<small>/ ${p.trainDays} 次</small></span><span class="k">训练</span></div>
+            <div><span class="v">${sum.sleep != null ? n1(sum.sleep) : '—'}<small>小时</small></span><span class="k">平均睡眠</span></div>
+            <div><span class="v">${n0(sum.water)}<small>ml</small></span><span class="k">平均饮水</span></div>
+            ${pl.showNumbers ? html`<div><span class="v">${sum.weightDelta != null ? (sum.weightDelta > 0 ? '+' : '') + sum.weightDelta.toFixed(1) : '—'}<small>kg</small></span><span class="k">7 日均值变化</span></div>
+            <div><span class="v">${sum.proteinHit}<small>天</small></span><span class="k">蛋白质达标</span></div>` : null}
+            <div><span class="v">${sum.cardio}<small>分钟</small></span><span class="k">有氧</span></div>
+          </div>
+        <//>
+        <${Sec} title="七件事完成情况">
+          <div class="stack-s">${QS.THING_KEYS.map((k) => k).sort((a, b) => sum.counts[b] - sum.counts[a]).map((k) => html`<div class="bar-row"><span>${QS.THINGS[k].n}</span><${Meter} pct=${(sum.counts[k] / 7) * 100}/><span class="v">${sum.counts[k]}/7</span></div>`)}</div>
+        <//>
+        <${Sec} title="Claude 周复盘"><${WeeklyAI} wk=${wk} summary=${sum}/><//>
+      </div>
+      <div>
+        <${Sec} first=${true} title="花历" right=${html`<div class="row" style="gap:2px"><button type="button" class="icon-btn" aria-label="上个月" onClick=${() => shiftMonth(-1)}>${Icon.left()}</button><strong class="tn">${month.replace('-', '.')}</strong><button type="button" class="icon-btn" aria-label="下个月" disabled=${month === today.slice(0, 7)} onClick=${() => shiftMonth(1)}>${Icon.right()}</button></div>`}>
+          <${MonthFlowers} month=${month} pl=${pl} p=${p}/>
+          <p class="small muted">每一瓣是一件事，点某一天可以补记。</p>
+        <//>
+        <${Sec} title="问 Claude"><${Coach}/><//>
+      </div>
+    </div>`;
+}
+
+// ---------- 资料表单（首次设置和设置页共用） ----------
+const GOAL_OPTS = [{ v: 'lose', l: '减脂减重' }, { v: 'shape', l: '塑形紧致' }, { v: 'posture', l: '改善体态' }, { v: 'muscle', l: '增肌变强' }];
+const CONCERN_OPTS = [{ v: 'acne', l: '痘痘出油' }, { v: 'tone', l: '暗沉色斑' }, { v: 'aging', l: '细纹松弛' }, { v: 'puffy', l: '水肿和脸型' }];
+const SAFETY_OPTS = [
+  ['preg', '正在备孕、怀孕或哺乳'],
+  ['under18', '未满 18 岁'],
+  ['ed', '有进食障碍史，或对吃东西和体重感到很痛苦'],
+  ['chronic', '有慢性病或长期用药（如糖尿病、肾病、甲状腺问题）'],
+];
+const toggleIn = (arr, v) => (arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
+
+function BasicsFields({ f, set }) {
+  return html`<div class="stack">
+    <${Field} id="p-nick" label="怎么称呼你（可不填）" value=${f.nick} onInput=${set('nick')}/>
+    <div class="stack-s"><span class="label">生理性别（用于计算代谢）</span><${Seg} label="生理性别" value=${f.sex} onChange=${set('sex')} options=${[{ v: 'f', l: '女' }, { v: 'm', l: '男' }]}/></div>
+    <div class="grid-2">
+      <${Field} id="p-year" label="出生年份" inputmode="numeric" placeholder="1996" value=${f.birthYear} onInput=${set('birthYear')}/>
+      <${Field} id="p-height" label="身高（cm）" inputmode="decimal" placeholder="165" value=${f.height} onInput=${set('height')}/>
+      <${Field} id="p-weight" label="现在体重（kg）" inputmode="decimal" placeholder="60" value=${f.weight} onInput=${set('weight')}/>
+      <${Field} id="p-goal" label="目标体重（kg，可不填）" inputmode="decimal" value=${f.goalWeight} onInput=${set('goalWeight')}/>
+    </div>
+    <div class="stack-s"><span class="label">日常活动量（不算专门训练）</span><${Seg} label="日常活动量" value=${f.activity} onChange=${set('activity')} options=${[{ v: 'sedentary', l: '久坐' }, { v: 'light', l: '偏少' }, { v: 'moderate', l: '中等' }, { v: 'high', l: '较多' }]}/></div>
+    <div class="stack-s"><span class="label">身材目标</span><${Chips} value=${f.goals} options=${GOAL_OPTS} onToggle=${(v) => set('goals')(toggleIn(f.goals, v))}/></div>
+  </div>`;
+}
+function TrainFields({ f, set }) {
+  return html`<div class="stack">
+    <div class="stack-s"><span class="label">每周能练几天</span><${Seg} label="每周训练天数" value=${f.trainDays} onChange=${set('trainDays')} options=${[2, 3, 4, 5].map((n) => ({ v: n, l: `${n} 天` }))}/></div>
+    <div class="stack-s"><span class="label">力量训练基础</span><${Seg} label="训练基础" value=${f.level} onChange=${set('level')} options=${[{ v: 'new', l: '新手' }, { v: 'mid', l: '练过一阵' }, { v: 'pro', l: '有经验' }]}/></div>
+    <div class="stack-s"><span class="label">默认训练场地（每次开练前都能切换）</span><${Seg} label="默认场地" value=${f.venue} onChange=${set('venue')} options=${[{ v: 'gym', l: '健身房' }, { v: 'home', l: '在家' }]}/></div>
+    <p class="small muted">在家的版本默认有一对哑铃和弹力带，没有的话先用背包、水瓶代替。</p>
+  </div>`;
+}
+function SkinFields({ f, set }) {
+  return html`<div class="stack">
+    <div class="stack-s"><span class="label">肤质</span><${Seg} label="肤质" value=${f.skinType} onChange=${set('skinType')} options=${[{ v: 'oily', l: '油皮' }, { v: 'combo', l: '混合' }, { v: 'dry', l: '干皮' }, { v: 'sensitive', l: '敏感' }]}/></div>
+    <div class="stack-s"><span class="label">已经习惯用 A 醇或酸类了吗</span><${Seg} label="活性使用经验" value=${f.skinUsed} onChange=${set('skinUsed')} options=${[{ v: 'no', l: '没有' }, { v: 'yes', l: '用了 3 个月以上' }]}/></div>
+    <div class="stack-s"><span class="label">想改善的问题</span><${Chips} value=${f.concerns} options=${CONCERN_OPTS} onToggle=${(v) => set('concerns')(toggleIn(f.concerns, v))}/></div>
+    ${f.sex === 'f' ? html`<label class="check"><input id="p-cycle" type="checkbox" checked=${f.trackCycle} onChange=${(e) => set('trackCycle')(e.target.checked)}/><span>记录经期<br/><span class="small muted">用来解释体重波动和长痘规律</span></span></label>` : null}
+  </div>`;
+}
+function SafetyFields({ f, set }) {
+  return html`<div class="stack-s">${SAFETY_OPTS.map(([k, t]) => html`<label class="check"><input id=${'p-s-' + k} type="checkbox" checked=${!!f.safety[k]} onChange=${(e) => set('safety')({ ...f.safety, [k]: e.target.checked })}/><span>${t}</span></label>`)}<p class="small muted">选中后程序会取消热量缺口或隐藏相关内容。都没有就直接下一步。</p></div>`;
+}
+
+function readBasics(f) {
+  const nowY = parseInt(E.today(), 10);
+  const birthYear = parseInt(f.birthYear, 10), height = parseFloat(f.height), weight = parseFloat(f.weight);
+  const goalWeight = String(f.goalWeight).trim() === '' ? null : parseFloat(f.goalWeight);
+  if (!f.sex) return { err: '请选择生理性别，它决定代谢的计算公式。' };
+  if (!(birthYear >= nowY - 100 && birthYear <= nowY - 10)) return { err: '请填写正确的出生年份，比如 1996。' };
+  if (!(height >= 120 && height <= 220)) return { err: '身高请填 120 到 220 之间的数字。' };
+  if (!(weight >= 30 && weight <= 250)) return { err: '体重请填 30 到 250 之间的数字。' };
+  if (goalWeight != null && !(goalWeight >= 30 && goalWeight <= 250)) return { err: '目标体重请填 30 到 250 之间的数字，或者留空。' };
+  return { birthYear, height, weight, goalWeight };
+}
+function planPreview(f) {
+  const b = readBasics(f);
+  if (b.err) return null;
+  const nowY = parseInt(E.today(), 10);
+  const safety = f.safety || {};
+  return E.plan({ ...f, ...b, safety: nowY - b.birthYear < 18 ? { ...safety, under18: true } : safety }, b.weight, E.today());
+}
+
+function PlanPreview({ f }) {
+  const pl = planPreview(f);
+  if (!pl) return html`<div class="stack-s"><h3>你的计划</h3><p class="note">填完身高、体重和出生年份，这里会算出每天的目标。</p></div>`;
+  return html`<div class="stack">
+    <div class="row between"><h3>你的计划</h3><${Pill} s="info">${pl.modeName}<//></div>
+    <div class="kv">
+      ${pl.showNumbers ? html`<div><span class="v">${n0(pl.kcal)}<small>千卡</small></span><span class="k">每日热量</span></div><div><span class="v">${pl.protein}<small>g</small></span><span class="k">蛋白质</span></div>` : null}
+      <div><span class="v">${n0(pl.water)}<small>ml</small></span><span class="k">饮水</span></div>
+      <div><span class="v">${n0(pl.steps)}<small>步</small></span><span class="k">步数</span></div>
+    </div>
+    ${pl.showNumbers ? html`<p class="small muted tn">基础代谢约 ${n0(pl.bmr)} 千卡，日常消耗约 ${n0(pl.tdee)} 千卡。${pl.deficit ? `每天少吃约 ${n0(pl.deficit)} 千卡，预计每周减 ${pl.weekly.toFixed(2)} kg，这个速度比较容易保住肌肉和皮肤状态。` : ''}</p>` : null}
+    ${pl.warnings.map((w) => html`<${Notice} s=${w.s}>${w.t}<//>`)}
+  </div>`;
+}
+
+/* 从备份文件恢复。只在本地模式出现，账号里的记录不受影响。 */
+function RestoreBackup({ intro }) {
+  const file = useRef(null);
+  const [r, setR] = useState(null);
+  const [err, setErr] = useState('');
+  const onFile = async (e) => {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = ''; // 同一个文件可以再选一次
+    setErr(''); setR(null);
+    if (!f) return;
+    let text = '';
+    try { if (f.size < 20e6) text = await f.text(); } catch (x) { /* 下面统一提示 */ }
+    const got = text ? S.readBackup(text) : { err: '读不了这个文件，请选导出的 .json 备份文件。' };
+    if (got.err) setErr(got.err); else setR(got);
+  };
+  const apply = () => {
+    if (!S.restoreBackup(r)) { setErr('这个浏览器的存储空间不够，没有恢复成功，原来的记录没有变。'); return; }
+    setR(null);
+    S.closeSheet();
+    S.toast('已从备份恢复');
+  };
+  const pick = html`<button type="button" class=${intro ? 'link' : 'btn ghost'} onClick=${() => file.current && file.current.click()}>${intro ? '从备份文件恢复' : '从备份恢复'}</button><input ref=${file} id=${intro ? 'restore-file-intro' : 'restore-file'} type="file" accept=".json,application/json" hidden onChange=${onFile}/>`;
+  let found = null;
+  if (r) {
+    const c = r.counts, at = r.exportedAt ? new Date(r.exportedAt) : null;
+    const when = at && !isNaN(at) ? `${at.getFullYear()}年${at.getMonth() + 1}月${at.getDate()}日` : '';
+    found = html`<${Notice} title=${when ? `这是${when}导出的备份` : '找到备份'}>有 ${c.days} 天的每日记录${c.days ? `（${E.fmtShort(r.first)} 到 ${E.fmtShort(r.last)}）` : ''}${c.comp ? `、${c.comp} 次体测` : ''}${c.med ? `、${c.med} 条医美记录` : ''}。${intro ? '' : '恢复后，这个浏览器里现有的记录会被这份备份替换。'}${c.photos ? '对比照存在账号里，不会恢复。' : ''}<//>
+      <div class="row">${intro ? html`<button type="button" class="btn" onClick=${apply}>恢复这份备份</button>` : html`<${Confirm} cls="btn" label="用这份备份替换现有记录" sure="确定替换？再点一次" onYes=${apply}/>`}<button type="button" class="link" onClick=${() => setR(null)}>取消</button></div>`;
+  }
+  return html`<div class="stack-s">
+    ${intro ? html`<p class="small muted">在别的手机或浏览器用过气色簿？${pick}</p>` : html`<p class="small muted">换了手机或浏览器时，可以用导出的备份文件把记录搬过来。</p><div>${pick}</div>`}
+    ${err ? html`<p class="err" role="alert">${err}</p>` : null}
+    ${found}
+  </div>`;
+}
+
+function Onboarding() {
+  const [step, setStep] = useState(0);
+  const [err, setErr] = useState('');
+  const [f, setF] = useState({ nick: '', sex: '', birthYear: '', height: '', weight: '', goalWeight: '', activity: 'light', goals: ['lose', 'shape', 'posture', 'muscle'], trainDays: 3, level: 'new', venue: 'gym', skinType: 'combo', skinUsed: 'no', concerns: ['acne', 'tone', 'aging', 'puffy'], safety: {}, trackCycle: true });
+  const set = (k) => (v) => setF((cur) => ({ ...cur, [k]: v }));
+  const titles = ['先认识一下你', '能怎么练', '皮肤情况', '健康确认'];
+  const next = () => {
+    if (step === 0) { const b = readBasics(f); if (b.err) { setErr(b.err); return; } }
+    setErr('');
+    if (step < 3) { setStep(step + 1); window.scrollTo(0, 0); return; }
+    const b = readBasics(f), today = E.today();
+    const safety = today.slice(0, 4) - b.birthYear < 18 ? { ...f.safety, under18: true } : f.safety;
+    S.setProfile({ ...f, ...b, safety, done: true, startDate: today, skinStart: today, foodMode: safety.ed ? 'palm' : 'numbers', medBudget: null });
+    if (!safety.ed) S.patchDay(today, { weight: b.weight });
+  };
+  return html`<div class="setup">
+    <div class="stack" style="gap:20px">
+      <div class="stack-s"><div class="brand-big">气色簿</div><p class="note">把吃、动、睡、护肤和医美放进同一本账。每天做七件事，开一朵花。</p></div>
+      ${step === 0 && S.state.mode === 'local' ? html`<${RestoreBackup} intro/>` : null}
+      <div class="steps" aria-label=${`第 ${step + 1} 步，共 4 步`}>${titles.map((_, i) => html`<i class=${i <= step ? 'on' : ''}></i>`)}</div>
+      <h1>${titles[step]}</h1>
+      ${step === 0 ? html`<${BasicsFields} f=${f} set=${set}/>` : step === 1 ? html`<${TrainFields} f=${f} set=${set}/>` : step === 2 ? html`<${SkinFields} f=${f} set=${set}/>` : html`<${SafetyFields} f=${f} set=${set}/>`}
+      ${err ? html`<p class="err">${err}</p>` : null}
+      <div class="row">
+        ${step > 0 ? html`<button type="button" class="btn ghost" onClick=${() => { setErr(''); setStep(step - 1); }}>上一步</button>` : null}
+        <button type="button" class="btn" onClick=${next}>${step === 3 ? '生成我的计划' : '下一步'}</button>
+      </div>
+    </div>
+    <aside class="aside stack">
+      <${PlanPreview} f=${f}/>
+      <div class="hero-day" style="grid-template-columns:auto minmax(0,1fr)">
+        <${Flower} states=${[true, true, true, true, false, false, false]} size=${96}/>
+        <p class="small muted">七瓣花对应每天七件事：睡够、喝水、吃好、动起来、体态、早护防晒、晚护。图上是做到四件的样子。</p>
+      </div>
+    </aside>
+  </div>`;
+}
+
+function SettingsSheet() {
+  const p = S.state.profile;
+  const [f, setF] = useState(() => ({ ...p, birthYear: String(p.birthYear), height: String(p.height), weight: String(p.weight), goalWeight: p.goalWeight != null ? String(p.goalWeight) : '', medBudget: p.medBudget != null ? String(p.medBudget) : '', safety: p.safety || {} }));
+  const [err, setErr] = useState('');
+  const set = (k) => (v) => setF((cur) => ({ ...cur, [k]: v }));
+  const save = () => {
+    const b = readBasics(f);
+    if (b.err) { setErr(b.err); return; }
+    const budget = String(f.medBudget).trim() === '' ? null : Math.max(0, +f.medBudget || 0);
+    const safety = parseInt(E.today(), 10) - b.birthYear < 18 ? { ...f.safety, under18: true } : f.safety;
+    S.setProfile({ ...f, ...b, medBudget: budget, safety, foodMode: safety.ed ? 'palm' : f.foodMode });
+    S.closeSheet();
+    S.toast('设置已保存');
+  };
+  return html`<div class="stack">
+    <${BasicsFields} f=${f} set=${set}/>
+    <h3>训练</h3><${TrainFields} f=${f} set=${set}/>
+    <h3>皮肤</h3><${SkinFields} f=${f} set=${set}/>
+    <h3>健康情况</h3><${SafetyFields} f=${f} set=${set}/>
+    <h3>饮食记录方式</h3>
+    <${Seg} label="饮食记录方式" value=${f.foodMode} onChange=${set('foodMode')} options=${[{ v: 'numbers', l: '估算热量' }, { v: 'palm', l: '手掌法，不算数字' }]}/>
+    <h3>医美预算</h3>
+    <${Field} id="p-budget" label="每年预算（元，可不填）" inputmode="numeric" value=${f.medBudget} onInput=${set('medBudget')}/>
+    ${err ? html`<p class="err">${err}</p>` : null}
+    <div><button type="button" class="btn" onClick=${save}>保存设置</button></div>
+    <h3>数据</h3>
+    <p class="small muted">${S.state.mode === 'cloud' ? '记录保存在你的账号里，只有你本人能读到。把页面分享给别人时，对方看到的是一份空白的新记录。' : window.QS_OFFLINE ? '离线版的记录只存在这个浏览器里，换设备看不到。清理浏览器数据会把记录一起删掉，记得定期导出备份。' : '现在的打开方式只把记录存在这个浏览器里，换设备看不到。'}</p>
+    <div class="row between">
+      <button type="button" class="btn ghost" onClick=${() => S.exportAll()}>导出全部数据</button>
+      <${Confirm} label="清空全部数据" sure="不可恢复，确定清空？再点一次" onYes=${async () => { S.closeSheet(); await S.clearAll(); }}/>
+    </div>
+    ${S.state.mode === 'local' ? html`<${RestoreBackup}/>` : null}
+    <p class="small muted">气色簿提供的是一般健康信息，不能代替医生的诊断和治疗。</p>
+  </div>`;
+}
+
+// ---------- 外壳 ----------
+const TABS = [['today', '今日', Today], ['food', '饮食', Food], ['train', '训练', Train], ['body', '身材', Body], ['skin', '护肤', Skin], ['med', '医美', Med], ['review', '复盘', Review]];
+function currentTab() {
+  const h = location.hash.slice(1);
+  if (h === 'train-posture') return 'train';
+  return TABS.some((t) => t[0] === h) ? h : 'today';
+}
+function App() {
+  const [, bump] = useState(0);
+  const [tab, setTab] = useState(currentTab);
+  useEffect(() => {
+    const off = S.subscribe(() => bump((v) => v + 1));
+    bump((v) => v + 1); // 订阅前已经发生的状态变化也要显示出来
+    return off;
+  }, []);
+  useEffect(() => {
+    const f = () => { setTab(currentTab()); window.scrollTo(0, 0); };
+    addEventListener('hashchange', f);
+    return () => removeEventListener('hashchange', f);
+  }, []);
+  useEffect(() => {
+    const f = (e) => { if (e.key === 'Escape' && S.state.sheet) S.closeSheet(); };
+    addEventListener('keydown', f);
+    return () => removeEventListener('keydown', f);
+  }, []);
+  useEffect(() => {
+    const f = () => { if (document.visibilityState === 'visible' && UI.followToday && UI.date !== E.today()) { UI.date = E.today(); S.emit(); } };
+    document.addEventListener('visibilitychange', f);
+    return () => document.removeEventListener('visibilitychange', f);
+  }, []);
+  const st = S.state;
+  const toasts = html`<div class="toasts" aria-live="polite">${st.toasts.map((t) => html`<div key=${t.id} class=${'toast ' + (t.tone === 'crit' ? 'crit' : '')}>${t.msg}</div>`)}</div>`;
+  if (!st.ready) {
+    return html`<div class="boot"><div class="inner"><div class="brand" style="font-size:32px">气色簿</div>
+      <p class="muted">${st.loadFailed ? '暂时连不上数据。请检查网络，然后重新打开这个页面。' : '正在打开你的记录，包括今日七件事、体重趋势和护肤方案。'}</p></div></div>${toasts}`;
+  }
+  if (!st.profile || !st.profile.done) return html`<${Onboarding}/>${toasts}`;
+  const View = TABS.find((t) => t[0] === tab)[2];
+  const settings = () => S.openSheet('设置', () => html`<${SettingsSheet}/>`);
+  const links = () => TABS.map(([k, n]) => html`<a href=${'#' + k} aria-current=${tab === k ? 'page' : null}>${n}</a>`);
+  return html`<div class="shell">
+    <aside class="rail">
+      <a class="brand" href="#today">气色簿</a>
+      <nav aria-label="目录">${links()}</nav>
+      <div class="rail-foot"><button type="button" class="btn ghost sm" onClick=${settings}>${Icon.sliders()}设置</button></div>
+    </aside>
+    <main class="main">
+      <div class="topbar"><a class="brand" href="#today">气色簿</a><button type="button" class="icon-btn" aria-label="设置" onClick=${settings}>${Icon.sliders()}</button></div>
+      ${st.mode === 'local' && !window.QS_OFFLINE ? html`<${Notice} s="warn">现在的打开方式只把记录存在这个浏览器里。在 claude.ai 登录后打开，手机和电脑才能同步。<//>` : null}
+      ${st.stale ? html`<${Notice} s="warn">暂时连不上数据，看到的可能不是最新内容。<//>` : null}
+      <${View} key=${tab}/>
+    </main>
+    <nav class="tabbar" aria-label="目录">${links()}</nav>
+    ${st.sheet ? html`<div class="sheet-bg" onClick=${(e) => { if (e.target === e.currentTarget) S.closeSheet(); }}>
+      <div class="sheet" role="dialog" aria-modal="true" aria-label=${st.sheet.title}>
+        <div class="row between"><h2>${st.sheet.title}</h2><button type="button" class="icon-btn" aria-label="关闭" onClick=${() => S.closeSheet()}>${Icon.close()}</button></div>
+        ${st.sheet.render()}
+      </div>
+    </div>` : null}
+  </div>${toasts}`;
+}
+
+const root = document.getElementById('app');
+root.textContent = '';
+render(html`<${App}/>`, root);
+S.init();
+
+</script>
+<script>
+// 注册离线缓存：第一次打开后，断网也能从手机里直接打开
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+}
+// 已经有记录的人，请浏览器不要在空间紧张时自动清掉这些数据
+try {
+  if (localStorage.getItem('qisebu.v1.profile') && navigator.storage && navigator.storage.persist) {
+    navigator.storage.persisted().then(function (p) { if (!p) return navigator.storage.persist(); }).catch(function () {});
+  }
+} catch (e) { /* 存储不可用时页面自己会提示 */ }
+</script></body></html>
